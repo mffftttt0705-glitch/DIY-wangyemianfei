@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>自主 DIY 网页平台</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    header {
+      background: #1e293b;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #334155;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    header h1 { font-size: 18px; font-weight: 600; white-space: nowrap; }
+    .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+    button:hover { background: #2563eb; }
+    button.secondary { background: #475569; }
+    button.secondary:hover { background: #64748b; }
+    button.danger { background: #dc2626; }
+    button.danger:hover { background: #b91c1c; }
+    button.success { background: #16a34a; }
+    button.success:hover { background: #15803d; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .main { flex: 1; display: flex; overflow: hidden; }
+    .sidebar {
+      width: 260px;
+      background: #1e293b;
+      border-right: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-header {
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #94a3b8;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .project-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+    .project-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 4px;
+      transition: background 0.15s;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .project-item:hover { background: #334155; }
+    .project-item.active { background: #3b82f6; }
+    .project-item .title { font-size: 14px; font-weight: 500; }
+    .project-item .meta { font-size: 11px; color: #94a3b8; }
+    .project-item.active .meta { color: #bfdbfe; }
+    .editor-area { flex: 1; display: flex; overflow: hidden; }
+    .editor-panel, .preview-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #334155;
+    }
+    .preview-panel { border-right: none; }
+    .panel-header {
+      background: #1e293b;
+      padding: 8px 16px;
+      font-size: 13px;
+      color: #94a3b8;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    textarea {
+      flex: 1;
+      background: #0f172a;
+      color: #e2e8f0;
+      border: none;
+      padding: 16px;
+      font-family: "SF Mono", "Fira Code", Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      resize: none;
+      outline: none;
+    }
+    iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+      background: white;
+    }
+    .status { font-size: 12px; color: #64748b; }
+    .user-info { font-size: 13px; color: #94a3b8; margin-right: 8px; }
+
+    /* 登录弹窗 */
+    .modal-mask {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .modal {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 28px;
+      width: 360px;
+      max-width: 90vw;
+      border: 1px solid #334155;
+    }
+    .modal h2 { margin-bottom: 20px; font-size: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 6px; }
+    .form-group input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 14px;
+      outline: none;
+    }
+    .form-group input:focus { border-color: #3b82f6; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-actions button { flex: 1; }
+    .error-msg { color: #f87171; font-size: 13px; margin-top: 8px; }
+
+    /* 发布弹窗 */
+    .publish-url {
+      background: #0f172a;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 13px;
+      word-break: break-all;
+      margin: 12px 0;
+      border: 1px solid #334155;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>自主 DIY 网页平台</h1>
+    <div class="toolbar">
+      <span class="user-info" id="userInfo"></span>
+      <span class="status" id="status">未登录</span>
+      <button id="btnSave" onclick="saveProject()" disabled>保存到云端</button>
+      <button id="btnPublish" class="success" onclick="showPublishModal()" disabled>发布</button>
+      <button onclick="downloadHTML()">下载网页</button>
+      <button class="secondary" onclick="clearCode()">清空</button>
+      <button class="secondary" onclick="loadExample()">加载示例</button>
+      <button id="btnAuth" class="secondary" onclick="showAuthModal()">登录 / 注册</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- 左侧项目列表 -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <span>我的项目</span>
+        <button style="padding:4px 10px;font-size:12px;" onclick="createNewProject()">+ 新建</button>
+      </div>
+      <div class="project-list" id="projectList">
+        <div style="padding:20px;color:#64748b;font-size:13px;text-align:center;">
+          登录后可管理多个项目
+        </div>
+      </div>
+    </div>
+
+    <!-- 编辑区 -->
+    <div class="editor-area">
+      <div class="editor-panel">
+        <div class="panel-header">
+          <span>HTML 代码</span>
+          <span id="currentTitle" style="color:#e2e8f0;font-weight:500;"></span>
+        </div>
+        <textarea id="code" placeholder="在这里写你的 HTML 代码..."></textarea>
+      </div>
+      <div class="preview-panel">
+        <div class="panel-header">实时预览</div>
+        <iframe id="preview"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- 登录/注册弹窗 -->
+  <div class="modal-mask" id="authModal" style="display:none;">
+    <div class="modal">
+      <h2 id="authTitle">登录</h2>
+      <div class="form-group">
+        <label>用户名</label>
+        <input type="text" id="authUsername" placeholder="3-20位字符">
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input type="password" id="authPassword" placeholder="至少6位">
+      </div>
+      <div class="error-msg" id="authError"></div>
+      <div class="modal-actions">
+        <button class="secondary" onclick="hideAuthModal()">取消</button>
+        <button id="authSubmitBtn" onclick="submitAuth()">登录</button>
+      </div>
+      <p style="margin-top:16px;font-size:13px;color:#94a3b8;text-align:center;">
+        <a href="javascript:void(0)" id="switchAuthMode" style="color:#60a5fa;">没有账号？去注册</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- 发布弹窗 -->
+  <div class="modal-mask" id="publishModal" style="display:none;">
+    <div class="modal">
+      <h2>发布网页</h2>
+      <p style="font-size:13px;color:#94a3b8;margin-bottom:12px;">设置一个简短的访问地址（slug）</p>
+      <div class="form-group">
+        <label>访问地址</label>
+        <input type="text" id="publishSlug" placeholder="例如：my-cool-page">
+      </div>
+      <div class="publish-url" id="previewUrl">https://你的域名/p/xxx</div>
+      <div class="error-msg" id="publishError"></div>
+      <div class="modal-actions">
+        <button class="secondary" onclick="hidePublishModal()">取消</button>
+        <button class="success" onclick="doPublish()">确认发布</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== 全局状态 ====================
+    const API_BASE = ''; // 同源部署时留空；开发时写成 'http://localhost:3000'
+    let token = localStorage.getItem('diy-token') || '';
+    let currentUser = null;
+    let currentProjectId = null;
+    let isRegisterMode = false;
+    let saveTimer = null;
+
+    const codeEl = document.getElementById('code');
+    const preview = document.getElementById('preview');
+    const statusEl = document.getElementById('status');
+    const userInfoEl = document.getElementById('userInfo');
+    const projectListEl = document.getElementById('projectList');
+    const currentTitleEl = document.getElementById('currentTitle');
+
+    // 默认示例代码
+    const defaultCode = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的网页</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.6;
+      color: #333;
+    }
+    h1 { color: #2563eb; }
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>你好，世界！</h1>
+  <p>这是一个用「自主 DIY 网页平台」做出来的页面。</p>
+  <div class="card">
+    <h2>使用提示</h2>
+    <ul>
+      <li>左侧写代码，右侧实时预览</li>
+      <li>登录后可保存到云端并发布</li>
+      <li>点击「下载网页」可保存为独立 HTML 文件</li>
+    </ul>
+  </div>
+</body>
+</html>`;
+
+    // ==================== 工具函数 ====================
+    function api(url, options = {}) {
+      const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      return fetch(API_BASE + url, { ...options, headers })
+        .then(async res => {
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || '请求失败');
+          return data;
+        });
+    }
+
+    function updatePreview() {
+      const doc = preview.contentDocument || preview.contentWindow.document;
+      doc.open();
+      doc.write(codeEl.value);
+      doc.close();
+      statusEl.textContent = '本地已更新 ' + new Date().toLocaleTimeString();
+    }
+
+    function setLoggedIn(user) {
+      currentUser = user;
+      userInfoEl.textContent = user ? `你好，${user.username}` : '';
+      document.getElementById('btnAuth').textContent = user ? '退出登录' : '登录 / 注册';
+      document.getElementById('btnSave').disabled = !user;
+      document.getElementById('btnPublish').disabled = !user || !currentProjectId;
+      if (user) loadProjects();
+      else {
+        projectListEl.innerHTML = '<div style="padding:20px;color:#64748b;font-size:13px;text-align:center;">登录后可管理多个项目</div>';
+        currentProjectId = null;
+        currentTitleEl.textContent = '';
+      }
+    }
+
+    // ==================== 认证相关 ====================
+    function showAuthModal() {
+      if (currentUser) {
+        // 退出
+        token = '';
+        localStorage.removeItem('diy-token');
+        setLoggedIn(null);
+        statusEl.textContent = '已退出登录';
+        return;
+      }
+      isRegisterMode = false;
+      document.getElementById('authTitle').textContent = '登录';
+      document.getElementById('authSubmitBtn').textContent = '登录';
+      document.getElementById('switchAuthMode').textContent = '没有账号？去注册';
+      document.getElementById('authError').textContent = '';
+      document.getElementById('authUsername').value = '';
+      document.getElementById('authPassword').value = '';
+      document.getElementById('authModal').style.display = 'flex';
+    }
+
+    function hideAuthModal() {
+      document.getElementById('authModal').style.display = 'none';
+    }
+
+    document.getElementById('switchAuthMode').onclick = () => {
+      isRegisterMode = !isRegisterMode;
+      document.getElementById('authTitle').textContent = isRegisterMode ? '注册' : '登录';
+      document.getElementById('authSubmitBtn').textContent = isRegisterMode ? '注册' : '登录';
+      document.getElementById('switchAuthMode').textContent = isRegisterMode ? '已有账号？去登录' : '没有账号？去注册';
+      document.getElementById('authError').textContent = '';
+    };
+
+    async function submitAuth() {
+      const username = document.getElementById('authUsername').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const errEl = document.getElementById('authError');
+      errEl.textContent = '';
+
+      try {
+        const endpoint = isRegisterMode ? '/api/register' : '/api/login';
+        const data = await api(endpoint, {
+          method: 'POST',
+          body: JSON.stringify({ username, password })
+        });
+        token = data.token;
+        localStorage.setItem('diy-token', token);
+        setLoggedIn({ id: data.id, username: data.username });
+        hideAuthModal();
+        statusEl.textContent = isRegisterMode ? '注册成功' : '登录成功';
+      } catch (e) {
+        errEl.textContent = e.message;
+      }
+    }
+
+    // ==================== 项目相关 ====================
+    async function loadProjects() {
+      try {
+        const list = await api('/api/projects');
+        if (list.length === 0) {
+          projectListEl.innerHTML = '<div style="padding:20px;color:#64748b;font-size:13px;text-align:center;">暂无项目，点击上方「+ 新建」</div>';
+          return;
+        }
+        projectListEl.innerHTML = list.map(p => `
+          <div class="project-item \( {p.id === currentProjectId ? 'active' : ''}" onclick="openProject(' \){p.id}')">
+            <div class="title">${escapeHtml(p.title)}</div>
+            <div class="meta">
+              ${p.is_published ? '已发布 · ' : ''}
+              ${new Date(p.updated_at).toLocaleString()}
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        statusEl.textContent = '加载项目失败：' + e.message;
+      }
+    }
+
+    async function createNewProject() {
+      if (!currentUser) return showAuthModal();
+      const title = prompt('请输入项目标题', '我的新网页');
+      if (!title) return;
+
+      try {
+        const data = await api('/api/projects', {
+          method: 'POST',
+          body: JSON.stringify({ title, html: defaultCode })
+        });
+        currentProjectId = data.id;
+        codeEl.value = defaultCode;
+        currentTitleEl.textContent = data.title;
+        updatePreview();
+        document.getElementById('btnPublish').disabled = false;
+        await loadProjects();
+        statusEl.textContent = '新项目已创建';
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    async function openProject(id) {
+      try {
+        const p = await api('/api/projects/' + id);
+        currentProjectId = p.id;
+        codeEl.value = p.html || '';
+        currentTitleEl.textContent = p.title;
+        updatePreview();
+        document.getElementById('btnPublish').disabled = false;
+        await loadProjects();
+        statusEl.textContent = '已打开：' + p.title;
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    async function saveProject() {
+      if (!currentUser || !currentProjectId) return;
+      try {
+        await api('/api/projects/' + currentProjectId, {
+          method: 'PUT',
+          body: JSON.stringify({ html: codeEl.value })
+        });
+        statusEl.textContent = '已保存到云端 ' + new Date().toLocaleTimeString();
+        loadProjects();
+      } catch (e) {
+        statusEl.textContent = '保存失败：' + e.message;
+      }
+    }
+
+    // 自动保存（防抖）
+    codeEl.addEventListener('input', () => {
+      updatePreview();
+      if (currentUser && currentProjectId) {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(saveProject, 2000);
+      }
+    });
+
+    // ==================== 发布 ====================
+    function showPublishModal() {
+      if (!currentProjectId) return;
+      document.getElementById('publishError').textContent = '';
+      document.getElementById('publishSlug').value = '';
+      document.getElementById('previewUrl').textContent = location.origin + '/p/xxx';
+      document.getElementById('publishModal').style.display = 'flex';
+      document.getElementById('publishSlug').oninput = (e) => {
+        const slug = e.target.value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+        document.getElementById('previewUrl').textContent = location.origin + '/p/' + (slug || 'xxx');
+      };
+    }
+
+    function hidePublishModal() {
+      document.getElementById('publishModal').style.display = 'none';
+    }
+
+    async function doPublish() {
+      const slug = document.getElementById('publishSlug').value.trim().toLowerCase();
+      const errEl = document.getElementById('publishError');
+      errEl.textContent = '';
+      try {
+        const data = await api('/api/projects/' + currentProjectId + '/publish', {
+          method: 'POST',
+          body: JSON.stringify({ slug, publish: true })
+        });
+        hidePublishModal();
+        statusEl.textContent = '发布成功！';
+        alert('发布成功！访问地址：\n' + location.origin + data.url);
+        loadProjects();
+      } catch (e) {
+        errEl.textContent = e.message;
+      }
+    }
+
+    // ==================== 其他功能 ====================
+    function downloadHTML() {
+      const blob = new Blob([codeEl.value], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (currentTitleEl.textContent || 'my-website') + '.html';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function clearCode() {
+      if (confirm('确定要清空当前代码吗？')) {
+        codeEl.value = '';
+        updatePreview();
+      }
+    }
+
+    function loadExample() {
+      codeEl.value = defaultCode;
+      updatePreview();
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // ==================== 初始化 ====================
+    async function init() {
+      // 本地先加载默认或上次代码
+      const local = localStorage.getItem('webpage-builder-code');
+      codeEl.value = local || defaultCode;
+      updatePreview();
+
+      // 尝试恢复登录状态
+      if (token) {
+        try {
+          const me = await api('/api/me');
+          setLoggedIn(me);
+        } catch {
+          token = '';
+          localStorage.removeItem('diy-token');
+          setLoggedIn(null);
+        }
+      } else {
+        setLoggedIn(null);
+      }
+    }
+
+    // 本地也备份一份
+    codeEl.addEventListener('input', () => {
+      localStorage.setItem('webpage-builder-code', codeEl.value);
+    });
+
+    init();
+  </script>
+</body>
+</html>
