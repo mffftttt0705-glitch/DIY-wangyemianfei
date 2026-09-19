@@ -1,18 +1,18 @@
 {
-  "name": "qw-esports-backend",
+  "name": "diy-webpage-platform",
   "version": "1.0.0",
-  "description": "QW电竞护航平台后端",
+  "description": "自主DIY网页平台后端",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node test.js"
+    "dev": "node --watch server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^7.0.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.0"
+    "better-sqlite3": "^11.7.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^11.0.3"
   }
 }
