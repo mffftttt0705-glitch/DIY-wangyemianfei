@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DIY 电商网页搭建平台</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DIY 手机网页搭建平台</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -18,7 +18,7 @@
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
       height: 100vh;
@@ -35,25 +35,27 @@
     button:disabled { opacity: .45; cursor: not-allowed; }
     input, select, textarea { font-family: inherit; }
 
+    /* 首页 */
     #homeView {
       height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 28px;
+      gap: 24px;
       background: radial-gradient(ellipse at top, #1e293b 0%, #0f172a 70%);
+      padding: 20px;
     }
-    #homeView h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
-    #homeView .sub { color: var(--muted); font-size: 15px; margin-top: -16px; }
-    .home-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    #homeView h1 { font-size: 26px; font-weight: 700; text-align: center; }
+    #homeView .sub { color: var(--muted); font-size: 14px; text-align: center; margin-top: -12px; }
+    .home-actions { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
     .btn-home {
-      padding: 16px 36px;
-      font-size: 16px;
+      padding: 14px 32px;
+      font-size: 15px;
       font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: var(--primary-hover); }
@@ -62,30 +64,32 @@
     .btn-success { background: var(--success); color: #fff; }
     .btn-danger { background: var(--danger); color: #fff; }
 
+    /* 编辑器 */
     #editorView { display: none; height: 100vh; flex-direction: column; }
     #editorView.show { display: flex; }
 
     .topbar {
-      height: 52px;
+      height: 48px;
       background: var(--panel);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
+      padding: 0 10px;
       flex-shrink: 0;
-      gap: 12px;
+      gap: 8px;
     }
-    .topbar-left { display: flex; align-items: center; gap: 12px; }
-    .topbar-left h2 { font-size: 15px; font-weight: 600; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .topbar-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .topbar button { padding: 7px 14px; }
-    .status-text { font-size: 12px; color: var(--muted); }
+    .topbar-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .topbar-left h2 { font-size: 14px; font-weight: 600; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .topbar-right { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .topbar button { padding: 6px 10px; font-size: 12px; }
+    .status-text { font-size: 11px; color: var(--muted); }
 
     .editor-body { flex: 1; display: flex; overflow: hidden; }
 
+    /* 左侧 */
     .palette {
-      width: 260px;
+      width: 220px;
       background: var(--panel);
       border-right: 1px solid var(--border);
       display: flex;
@@ -96,9 +100,9 @@
     .palette-tab {
       flex: 1;
       min-width: 50%;
-      padding: 10px 4px;
+      padding: 8px 2px;
       text-align: center;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
       cursor: pointer;
       border-bottom: 2px solid transparent;
@@ -107,32 +111,58 @@
     }
     .palette-tab:hover { color: var(--text); background: #334155; }
     .palette-tab.active { color: #60a5fa; border-bottom-color: var(--primary); }
-    .palette-list { flex: 1; overflow-y: auto; padding: 12px; }
-    .palette-hint { font-size: 11px; color: var(--muted); margin-bottom: 10px; line-height: 1.4; }
+    .palette-list { flex: 1; overflow-y: auto; padding: 10px; }
+    .palette-hint { font-size: 10px; color: var(--muted); margin-bottom: 8px; line-height: 1.4; }
     .comp-card {
       background: #0f172a;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 8px;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 6px;
       cursor: grab;
-      transition: border-color .15s, transform .1s;
       user-select: none;
+      transition: border-color .15s;
     }
     .comp-card:hover { border-color: var(--primary); }
-    .comp-card:active { cursor: grabbing; transform: scale(0.98); }
     .comp-card .comp-preview {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 28px; margin-bottom: 4px; color: #94a3b8; overflow: hidden;
+    }
+    .comp-card .comp-preview svg { width: 20px; height: 20px; }
+    .comp-card .comp-name { font-size: 11px; text-align: center; color: var(--muted); }
+
+    /* 页面标签 */
+    .pages-bar {
       display: flex;
       align-items: center;
-      justify-content: center;
-      min-height: 36px;
-      margin-bottom: 6px;
-      color: #94a3b8;
-      overflow: hidden;
+      gap: 4px;
+      padding: 6px 10px;
+      background: #0f172a;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      flex-shrink: 0;
     }
-    .comp-card .comp-preview svg { width: 24px; height: 24px; }
-    .comp-card .comp-name { font-size: 12px; text-align: center; color: var(--muted); }
+    .page-tab {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      background: transparent;
+      color: var(--muted);
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+    .page-tab.active { background: var(--primary); color: #fff; }
+    .page-tab:hover:not(.active) { background: #334155; color: var(--text); }
+    .page-add {
+      padding: 5px 10px;
+      font-size: 12px;
+      background: transparent;
+      color: #60a5fa;
+      border: 1px dashed #334155;
+      border-radius: 6px;
+    }
 
+    /* 画布 - 固定手机尺寸 */
     .canvas-wrap {
       flex: 1;
       display: flex;
@@ -141,52 +171,73 @@
       overflow: hidden;
     }
     .canvas-toolbar {
-      padding: 8px 16px;
+      padding: 6px 12px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       border-bottom: 1px solid var(--border);
       background: var(--panel);
       flex-shrink: 0;
+      flex-wrap: wrap;
     }
-    .canvas-toolbar span { font-size: 12px; color: var(--muted); }
+    .canvas-toolbar span { font-size: 11px; color: var(--muted); }
     .canvas-scroll {
       flex: 1;
       overflow: auto;
-      padding: 24px;
+      padding: 20px;
       display: flex;
       justify-content: center;
+      align-items: flex-start;
     }
-    .canvas {
+    /* 手机外框 */
+    .phone-frame {
+      width: 375px;
+      flex-shrink: 0;
+      background: #1a1a1a;
+      border-radius: 36px;
+      padding: 12px;
+      box-shadow: 0 12px 48px rgba(0,0,0,.5), inset 0 0 0 2px #333;
+    }
+    .phone-notch {
+      width: 120px;
+      height: 28px;
+      background: #1a1a1a;
+      border-radius: 0 0 16px 16px;
+      margin: -4px auto 8px;
+      position: relative;
+      z-index: 2;
+    }
+    .phone-screen {
       width: 100%;
-      max-width: 420px;
-      min-height: 700px;
+      height: 667px;
       background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 8px 40px rgba(0,0,0,.35);
+      border-radius: 24px;
       overflow: hidden;
       position: relative;
     }
-    .canvas.phone { max-width: 390px; min-height: 780px; }
-    .canvas.empty-hint {
+    .phone-screen.preview-mode { cursor: default; }
+    .canvas-drop-zone {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      border: 2px dashed transparent;
+      transition: border-color .15s, background .15s;
+      -webkit-overflow-scrolling: touch;
+    }
+    .canvas-drop-zone.drag-over {
+      border-color: var(--primary);
+      background: rgba(59,130,246,.06);
+    }
+    .empty-hint {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 400px;
+      height: 100%;
       color: #94a3b8;
-      font-size: 14px;
-      gap: 8px;
+      font-size: 13px;
+      gap: 6px;
       pointer-events: none;
-    }
-    .canvas-drop-zone {
-      min-height: 60px;
-      border: 2px dashed transparent;
-      transition: border-color .15s, background .15s;
-    }
-    .canvas-drop-zone.drag-over {
-      border-color: var(--primary);
-      background: rgba(59,130,246,.08);
     }
 
     .canvas-el {
@@ -196,24 +247,24 @@
       transition: outline-color .1s;
       cursor: pointer;
     }
-    .canvas-el:hover { outline-color: rgba(59,130,246,.4); }
+    .canvas-el:hover { outline-color: rgba(59,130,246,.35); }
     .canvas-el.selected { outline-color: var(--primary); }
     .canvas-el .el-actions {
       position: absolute;
-      top: 4px;
-      right: 4px;
+      top: 2px;
+      right: 2px;
       display: none;
-      gap: 4px;
+      gap: 3px;
       z-index: 10;
     }
     .canvas-el.selected .el-actions { display: flex; }
     .el-actions button {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
+      width: 24px;
+      height: 24px;
+      border-radius: 5px;
       background: #1e293b;
       color: #fff;
-      font-size: 12px;
+      font-size: 11px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -221,9 +272,24 @@
     }
     .el-actions button:hover { background: #334155; }
     .el-actions .btn-del:hover { background: var(--danger); }
+    .link-badge {
+      position: absolute;
+      bottom: 2px;
+      left: 2px;
+      background: rgba(59,130,246,.9);
+      color: #fff;
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      display: none;
+      z-index: 5;
+    }
+    .canvas-el.selected .link-badge,
+    .canvas-el:hover .link-badge { display: block; }
 
+    /* 右侧属性 */
     .props-panel {
-      width: 280px;
+      width: 260px;
       background: var(--panel);
       border-left: 1px solid var(--border);
       display: flex;
@@ -232,65 +298,61 @@
       overflow: hidden;
     }
     .props-header {
-      padding: 12px 16px;
-      font-size: 13px;
+      padding: 10px 14px;
+      font-size: 12px;
       font-weight: 600;
       border-bottom: 1px solid var(--border);
       color: var(--muted);
     }
-    .props-body { flex: 1; overflow-y: auto; padding: 16px; }
-    .prop-group { margin-bottom: 16px; }
+    .props-body { flex: 1; overflow-y: auto; padding: 14px; }
+    .prop-group { margin-bottom: 14px; }
     .prop-group label {
       display: block;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
     .prop-group input[type="text"],
     .prop-group input[type="number"],
-    .prop-group select,
-    .prop-group textarea {
+    .prop-group select {
       width: 100%;
-      padding: 8px 10px;
+      padding: 7px 9px;
       border-radius: 6px;
       border: 1px solid var(--border);
       background: #0f172a;
       color: var(--text);
-      font-size: 13px;
+      font-size: 12px;
       outline: none;
     }
     .prop-group input:focus, .prop-group select:focus { border-color: var(--primary); }
-    .color-row { display: flex; gap: 8px; align-items: center; }
+    .color-row { display: flex; gap: 6px; align-items: center; }
     .color-row input[type="color"] {
-      width: 40px;
-      height: 36px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background: transparent;
-      padding: 0;
+      width: 36px; height: 32px;
+      border: none; border-radius: 6px;
+      cursor: pointer; background: transparent; padding: 0;
     }
-    .color-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .color-presets { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
     .color-swatch {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      cursor: pointer;
+      width: 24px; height: 24px;
+      border-radius: 5px; cursor: pointer;
       border: 2px solid transparent;
     }
     .color-swatch:hover { border-color: #fff; }
     .props-empty {
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12px;
       text-align: center;
-      padding: 40px 16px;
+      padding: 36px 12px;
       line-height: 1.6;
     }
+    .size-row { display: flex; gap: 8px; }
+    .size-row > div { flex: 1; }
 
+    /* 自定义弹窗 */
     .modal-mask {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.65);
+      background: rgba(0,0,0,.7);
       display: none;
       align-items: center;
       justify-content: center;
@@ -300,86 +362,45 @@
     .modal-mask.show { display: flex; }
     .modal {
       background: var(--panel);
-      border-radius: 16px;
+      border-radius: 14px;
       width: 100%;
-      max-width: 480px;
+      max-width: 400px;
       max-height: 80vh;
       display: flex;
       flex-direction: column;
       border: 1px solid var(--border);
       overflow: hidden;
+      animation: modalIn .2s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
     }
     .modal-header {
-      padding: 16px 20px;
+      padding: 14px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid var(--border);
     }
-    .modal-header h3 { font-size: 17px; }
+    .modal-header h3 { font-size: 16px; }
     .modal-close {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+      width: 30px; height: 30px;
+      border-radius: 7px;
       background: transparent;
       color: var(--muted);
       font-size: 18px;
     }
     .modal-close:hover { background: #334155; color: #fff; }
-    .modal-body { flex: 1; overflow-y: auto; padding: 12px; }
+    .modal-body { flex: 1; overflow-y: auto; padding: 16px 18px; }
     .modal-footer {
       padding: 12px 16px;
       border-top: 1px solid var(--border);
       display: flex;
-      gap: 10px;
+      gap: 8px;
       justify-content: flex-end;
     }
-    .project-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background .15s;
-    }
-    .project-item:hover { background: #334155; }
-    .project-item .info { flex: 1; min-width: 0; }
-    .project-item .title { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .project-item .meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .project-item .del-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: transparent;
-      color: var(--muted);
-      flex-shrink: 0;
-    }
-    .project-item .del-btn:hover { background: var(--danger); color: #fff; }
-    .empty-projects {
-      text-align: center;
-      padding: 48px 20px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: #16a34a;
-      color: #fff;
-      padding: 12px 24px;
-      border-radius: 10px;
-      font-size: 14px;
-      z-index: 2000;
-      opacity: 0;
-      transition: all .25s;
-      pointer-events: none;
-    }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
+    .modal-footer button { padding: 8px 16px; }
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
     .form-group input {
@@ -393,6 +414,31 @@
       outline: none;
     }
     .form-group input:focus { border-color: var(--primary); }
+    .modal-msg { font-size: 14px; line-height: 1.6; color: var(--text); }
+
+    .project-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .project-item:hover { background: #334155; }
+    .project-item .info { flex: 1; min-width: 0; }
+    .project-item .title { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .project-item .meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .project-item .del-btn {
+      width: 30px; height: 30px;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .project-item .del-btn:hover { background: var(--danger); color: #fff; }
+    .empty-projects { text-align: center; padding: 40px 16px; color: var(--muted); font-size: 13px; }
+
     .url-preview {
       background: #0f172a;
       padding: 10px 12px;
@@ -404,20 +450,53 @@
       margin-top: 8px;
     }
     .error-text { color: #f87171; font-size: 13px; margin-top: 8px; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: #16a34a;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      z-index: 2000;
+      opacity: 0;
+      transition: all .25s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* 预览时手机内交互 */
+    .preview-search-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 14px;
+      color: #111;
+    }
+
+    @media (max-width: 900px) {
+      .palette { width: 180px; }
+      .props-panel { width: 200px; }
+      .phone-frame { transform: scale(0.85); transform-origin: top center; }
+    }
   </style>
 </head>
 <body>
 
   <div id="homeView">
-    <h1>DIY 电商网页搭建平台</h1>
-    <p class="sub">拖拽组件 · 自选颜色 · 快速做出电商页面模型</p>
+    <h1>DIY 手机网页搭建平台</h1>
+    <p class="sub">拖拽组件 · 多页面跳转 · 真实可交互</p>
     <div class="home-actions">
-      <button class="btn-home btn-primary" onclick="createNewProject()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <button class="btn-home btn-primary" onclick="openCreateModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         新建项目
       </button>
       <button class="btn-home btn-secondary" onclick="showProjectsModal()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         我的项目
       </button>
     </div>
@@ -426,18 +505,19 @@
   <div id="editorView">
     <div class="topbar">
       <div class="topbar-left">
-        <button class="btn-secondary" style="padding:6px 12px;" onclick="backToHome()">← 返回</button>
-        <h2 id="editorTitle">未命名项目</h2>
+        <button class="btn-secondary" style="padding:5px 10px;" onclick="backToHome()">← 返回</button>
+        <h2 id="editorTitle">未命名</h2>
       </div>
       <div class="topbar-right">
-        <span class="status-text" id="saveStatus">未保存</span>
-        <button class="btn-secondary" onclick="showProjectsModal()">项目</button>
-        <button class="btn-secondary" onclick="previewPage()">预览</button>
+        <span class="status-text" id="saveStatus"></span>
+        <button class="btn-secondary" id="btnPreviewMode" onclick="togglePreviewMode()">预览交互</button>
         <button class="btn-primary" onclick="saveProject()">保存</button>
-        <button class="btn-success" onclick="exportHTML()">导出代码</button>
+        <button class="btn-success" onclick="exportHTML()">导出</button>
         <button class="btn-secondary" onclick="showPublishModal()">发布</button>
       </div>
     </div>
+
+    <div class="pages-bar" id="pagesBar"></div>
 
     <div class="editor-body">
       <div class="palette">
@@ -447,48 +527,125 @@
 
       <div class="canvas-wrap">
         <div class="canvas-toolbar">
-          <span>画布 · 从左侧拖入组件</span>
-          <button class="btn-secondary" style="padding:4px 10px;font-size:12px;" onclick="togglePhoneMode()">手机预览</button>
-          <button class="btn-secondary" style="padding:4px 10px;font-size:12px;" onclick="clearCanvas()">清空</button>
+          <span id="modeHint">编辑模式 · 拖入组件</span>
+          <button class="btn-secondary" style="padding:4px 8px;font-size:11px;" onclick="openClearModal()">清空本页</button>
         </div>
         <div class="canvas-scroll">
-          <div class="canvas phone" id="canvas">
-            <div class="canvas-drop-zone" id="dropZone"></div>
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-screen" id="phoneScreen">
+              <div class="canvas-drop-zone" id="dropZone"></div>
+            </div>
           </div>
         </div>
       </div>
 
       <div class="props-panel">
-        <div class="props-header">属性设置</div>
+        <div class="props-header">属性 / 跳转设置</div>
         <div class="props-body" id="propsBody">
-          <div class="props-empty">选中画布中的组件<br>即可修改颜色、文字等</div>
+          <div class="props-empty">选中组件后<br>可改颜色、大小、跳转页面</div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="modal-mask" id="projectsModal">
+  <!-- 新建项目弹窗 -->
+  <div class="modal-mask" id="createModal">
     <div class="modal">
       <div class="modal-header">
-        <h3>我的项目</h3>
-        <button class="modal-close" onclick="hideProjectsModal()">×</button>
+        <h3>新建项目</h3>
+        <button class="modal-close" onclick="hideModal('createModal')">×</button>
       </div>
-      <div class="modal-body" id="projectsList"></div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>项目名称</label>
+          <input type="text" id="createTitle" placeholder="例如：我的商城" maxlength="50">
+        </div>
+      </div>
       <div class="modal-footer">
-        <button class="btn-secondary" onclick="hideProjectsModal()">关闭</button>
-        <button class="btn-primary" onclick="hideProjectsModal(); createNewProject();">新建项目</button>
+        <button class="btn-secondary" onclick="hideModal('createModal')">取消</button>
+        <button class="btn-primary" onclick="confirmCreate()">创建</button>
       </div>
     </div>
   </div>
 
+  <!-- 通用确认弹窗 -->
+  <div class="modal-mask" id="confirmModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="confirmTitle">确认</h3>
+        <button class="modal-close" onclick="hideModal('confirmModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-msg" id="confirmMsg"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="hideModal('confirmModal')">取消</button>
+        <button class="btn-danger" id="confirmOkBtn">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 提示弹窗 -->
+  <div class="modal-mask" id="alertModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="alertTitle">提示</h3>
+        <button class="modal-close" onclick="hideModal('alertModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-msg" id="alertMsg"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" onclick="hideModal('alertModal')">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 项目列表 -->
+  <div class="modal-mask" id="projectsModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>我的项目</h3>
+        <button class="modal-close" onclick="hideModal('projectsModal')">×</button>
+      </div>
+      <div class="modal-body" id="projectsList"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="hideModal('projectsModal')">关闭</button>
+        <button class="btn-primary" onclick="hideModal('projectsModal'); openCreateModal();">新建</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新建页面 -->
+  <div class="modal-mask" id="newPageModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>新建页面</h3>
+        <button class="modal-close" onclick="hideModal('newPageModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>页面名称</label>
+          <input type="text" id="newPageName" placeholder="例如：分类页、商品详情" maxlength="30">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="hideModal('newPageModal')">取消</button>
+        <button class="btn-primary" onclick="confirmAddPage()">创建</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 发布 -->
   <div class="modal-mask" id="publishModal">
     <div class="modal">
       <div class="modal-header">
         <h3>发布网页</h3>
-        <button class="modal-close" onclick="hidePublishModal()">×</button>
+        <button class="modal-close" onclick="hideModal('publishModal')">×</button>
       </div>
-      <div class="modal-body" style="padding:20px;">
-        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">设置访问地址后，别人可通过链接直接打开你的页面</p>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">设置访问地址，别人可通过链接打开</p>
         <div class="form-group">
           <label>访问地址（slug）</label>
           <input type="text" id="publishSlug" placeholder="例如：my-shop">
@@ -497,20 +654,8 @@
         <div class="error-text" id="publishError"></div>
       </div>
       <div class="modal-footer">
-        <button class="btn-secondary" onclick="hidePublishModal()">取消</button>
+        <button class="btn-secondary" onclick="hideModal('publishModal')">取消</button>
         <button class="btn-success" onclick="doPublish()">确认发布</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-mask" id="previewModal">
-    <div class="modal" style="max-width:420px;height:85vh;">
-      <div class="modal-header">
-        <h3>页面预览</h3>
-        <button class="modal-close" onclick="hidePreviewModal()">×</button>
-      </div>
-      <div class="modal-body" style="padding:0;background:#fff;">
-        <iframe id="previewFrame" style="width:100%;height:100%;border:none;min-height:60vh;"></iframe>
       </div>
     </div>
   </div>
@@ -518,7 +663,8 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    const ICONS = {
+    // ========== 图标 ==========
+    var ICONS = {
       cart: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>',
       heart: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
       search: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
@@ -527,141 +673,189 @@
       grid: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
       star: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
       plus: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+      back: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>',
     };
-
-    function iconSized(svg, size) {
+    function iconS(svg, size) {
       return svg.replace(/width="24"/g, 'width="'+size+'"').replace(/height="24"/g, 'height="'+size+'"');
     }
 
-    const COMPONENT_DEFS = [
-      { type: 'icon-cart', name: '购物车图标', category: 'icons',
-        defaults: { color: '#374151', size: 24 },
-        render: function(p) { return '<span style="display:inline-flex;color:'+p.color+';padding:8px;">'+iconSized(ICONS.cart,p.size)+'</span>'; } },
-      { type: 'icon-heart', name: '收藏心形', category: 'icons',
-        defaults: { color: '#ef4444', size: 24 },
-        render: function(p) { return '<span style="display:inline-flex;color:'+p.color+';padding:8px;">'+iconSized(ICONS.heart,p.size)+'</span>'; } },
-      { type: 'icon-search', name: '搜索图标', category: 'icons',
-        defaults: { color: '#6b7280', size: 24 },
-        render: function(p) { return '<span style="display:inline-flex;color:'+p.color+';padding:8px;">'+iconSized(ICONS.search,p.size)+'</span>'; } },
-      { type: 'icon-user', name: '用户图标', category: 'icons',
-        defaults: { color: '#374151', size: 24 },
-        render: function(p) { return '<span style="display:inline-flex;color:'+p.color+';padding:8px;">'+iconSized(ICONS.user,p.size)+'</span>'; } },
-      { type: 'icon-star', name: '星星图标', category: 'icons',
-        defaults: { color: '#f59e0b', size: 24 },
-        render: function(p) { return '<span style="display:inline-flex;color:'+p.color+';padding:8px;">'+iconSized(ICONS.star,p.size)+'</span>'; } },
-
-      { type: 'nav-top', name: '顶部导航栏', category: 'nav',
-        defaults: { bgColor: '#ffffff', textColor: '#111827', logoText: 'Shop', menu1: '首页', menu2: '分类' },
+    // ========== 组件定义（默认无多余字样） ==========
+    var COMPONENT_DEFS = [
+      { type: 'icon-cart', name: '购物车', category: 'icons',
+        defaults: { color: '#374151', size: 24, linkPageId: '' },
+        render: function(p, ctx) {
+          return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.cart,p.size)+'</span>';
+        }},
+      { type: 'icon-heart', name: '收藏', category: 'icons',
+        defaults: { color: '#ef4444', size: 24, linkPageId: '' },
         render: function(p) {
-          return '<nav style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:'+p.bgColor+';border-bottom:1px solid #e5e7eb;font-family:system-ui,sans-serif;">'+
-            '<div style="display:flex;align-items:center;gap:16px;">'+
-              '<span style="font-size:18px;font-weight:700;color:'+p.textColor+';">'+esc(p.logoText)+'</span>'+
-              '<a href="#" style="color:'+p.textColor+';text-decoration:none;font-size:14px;opacity:.8;">'+esc(p.menu1)+'</a>'+
-              '<a href="#" style="color:'+p.textColor+';text-decoration:none;font-size:14px;opacity:.8;">'+esc(p.menu2)+'</a>'+
+          return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.heart,p.size)+'</span>';
+        }},
+      { type: 'icon-search', name: '搜索图标', category: 'icons',
+        defaults: { color: '#6b7280', size: 24, linkPageId: '' },
+        render: function(p) {
+          return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.search,p.size)+'</span>';
+        }},
+      { type: 'icon-user', name: '用户', category: 'icons',
+        defaults: { color: '#374151', size: 24, linkPageId: '' },
+        render: function(p) {
+          return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.user,p.size)+'</span>';
+        }},
+      { type: 'icon-home', name: '首页图标', category: 'icons',
+        defaults: { color: '#3b82f6', size: 24, linkPageId: '' },
+        render: function(p) {
+          return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.home,p.size)+'</span>';
+        }},
+      { type: 'icon-grid', name: '分类图标', category: 'icons',
+        defaults: { color: '#374151', size: 24, linkPageId: '' },
+        render: function(p) {
+          return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.grid,p.size)+'</span>';
+        }},
+
+      { type: 'nav-top', name: '顶部导航', category: 'nav',
+        defaults: { bgColor: '#ffffff', textColor: '#111827', logoText: 'Shop', menu1: '首页', menu2: '分类', menu1Page: '', menu2Page: '', cartPage: '', height: 48 },
+        render: function(p) {
+          return '<nav data-role="nav-top" style="display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:'+p.height+'px;background:'+p.bgColor+';border-bottom:1px solid #eee;font-family:system-ui,sans-serif;">'+
+            '<div style="display:flex;align-items:center;gap:14px;">'+
+              '<span style="font-size:17px;font-weight:700;color:'+p.textColor+';">'+esc(p.logoText)+'</span>'+
+              '<a href="javascript:void(0)" data-role="link" data-page="'+esc(p.menu1Page)+'" style="color:'+p.textColor+';text-decoration:none;font-size:13px;opacity:.85;">'+esc(p.menu1)+'</a>'+
+              '<a href="javascript:void(0)" data-role="link" data-page="'+esc(p.menu2Page)+'" style="color:'+p.textColor+';text-decoration:none;font-size:13px;opacity:.85;">'+esc(p.menu2)+'</a>'+
             '</div>'+
-            '<div style="display:flex;align-items:center;gap:14px;color:'+p.textColor+';">'+
-              iconSized(ICONS.search,20)+iconSized(ICONS.user,20)+
-              '<span style="position:relative;display:inline-flex;">'+iconSized(ICONS.cart,20)+
-                '<span style="position:absolute;top:-6px;right:-8px;background:#ef4444;color:#fff;font-size:10px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;">2</span></span>'+
+            '<div style="display:flex;align-items:center;gap:12px;color:'+p.textColor+';">'+
+              iconS(ICONS.search,18)+
+              '<span data-role="link" data-page="'+esc(p.cartPage)+'" style="position:relative;display:inline-flex;cursor:pointer;">'+iconS(ICONS.cart,18)+
+              '<span style="position:absolute;top:-5px;right:-7px;background:#ef4444;color:#fff;font-size:9px;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;">0</span></span>'+
             '</div></nav>';
         }},
-      { type: 'nav-bottom', name: '底部Tab导航', category: 'nav',
-        defaults: { bgColor: '#ffffff', activeColor: '#3b82f6', inactiveColor: '#9ca3af' },
+      { type: 'nav-bottom', name: '底部导航', category: 'nav',
+        defaults: { bgColor: '#ffffff', activeColor: '#3b82f6', inactiveColor: '#9ca3af',
+          tab1: '首页', tab2: '分类', tab3: '购物车', tab4: '我的',
+          page1: '', page2: '', page3: '', page4: '', height: 56 },
         render: function(p) {
-          return '<nav style="display:flex;background:'+p.bgColor+';border-top:1px solid #e5e7eb;padding:8px 0;font-family:system-ui,sans-serif;">'+
-            '<a href="#" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:'+p.activeColor+';font-size:11px;">'+iconSized(ICONS.home,22)+'首页</a>'+
-            '<a href="#" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:'+p.inactiveColor+';font-size:11px;">'+iconSized(ICONS.grid,22)+'分类</a>'+
-            '<a href="#" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:'+p.inactiveColor+';font-size:11px;">'+iconSized(ICONS.cart,22)+'购物车</a>'+
-            '<a href="#" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:'+p.inactiveColor+';font-size:11px;">'+iconSized(ICONS.user,22)+'我的</a></nav>';
+          function tab(label, page, active) {
+            var c = active ? p.activeColor : p.inactiveColor;
+            var ic = label==='首页'?ICONS.home:label==='分类'?ICONS.grid:label==='购物车'?ICONS.cart:ICONS.user;
+            return '<a href="javascript:void(0)" data-role="link" data-page="'+esc(page)+'" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:'+c+';font-size:10px;height:100%;">'+iconS(ic,20)+esc(label)+'</a>';
+          }
+          return '<nav data-role="nav-bottom" style="display:flex;background:'+p.bgColor+';border-top:1px solid #eee;height:'+p.height+'px;font-family:system-ui,sans-serif;">'+
+            tab(p.tab1,p.page1,true)+tab(p.tab2,p.page2,false)+tab(p.tab3,p.page3,false)+tab(p.tab4,p.page4,false)+'</nav>';
+        }},
+      { type: 'nav-back', name: '返回顶栏', category: 'nav',
+        defaults: { title: '', bgColor: '#ffffff', textColor: '#111827', backPage: '', height: 44 },
+        render: function(p) {
+          return '<div style="display:flex;align-items:center;height:'+p.height+'px;padding:0 12px;background:'+p.bgColor+';border-bottom:1px solid #eee;font-family:system-ui,sans-serif;">'+
+            '<span data-role="link" data-page="'+esc(p.backPage)+'" style="display:flex;align-items:center;color:'+p.textColor+';cursor:pointer;padding:4px;">'+iconS(ICONS.back,20)+'</span>'+
+            '<span style="flex:1;text-align:center;font-size:15px;font-weight:600;color:'+p.textColor+';margin-right:28px;">'+esc(p.title)+'</span></div>';
         }},
 
       { type: 'btn-primary', name: '主按钮', category: 'btn',
-        defaults: { text: '立即购买', bgColor: '#ef4444', textColor: '#ffffff', radius: 24 },
+        defaults: { text: '立即购买', bgColor: '#ef4444', textColor: '#ffffff', radius: 22, height: 44, linkPageId: '' },
         render: function(p) {
-          return '<div style="padding:8px 16px;"><button style="width:100%;background:'+p.bgColor+';color:'+p.textColor+';border:none;padding:12px 24px;border-radius:'+p.radius+'px;font-size:15px;font-weight:600;cursor:pointer;font-family:system-ui,sans-serif;">'+esc(p.text)+'</button></div>';
+          return '<div style="padding:8px 16px;"><button data-role="tap" data-page="'+esc(p.linkPageId)+'" style="width:100%;height:'+p.height+'px;background:'+p.bgColor+';color:'+p.textColor+';border:none;border-radius:'+p.radius+'px;font-size:15px;font-weight:600;cursor:pointer;font-family:system-ui,sans-serif;">'+esc(p.text)+'</button></div>';
         }},
       { type: 'btn-cart', name: '加入购物车', category: 'btn',
-        defaults: { text: '加入购物车', bgColor: '#f59e0b', textColor: '#ffffff', radius: 8 },
+        defaults: { text: '加入购物车', bgColor: '#f59e0b', textColor: '#ffffff', radius: 8, height: 44, linkPageId: '' },
         render: function(p) {
-          return '<div style="padding:8px 16px;"><button style="width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:'+p.bgColor+';color:'+p.textColor+';border:none;padding:12px 20px;border-radius:'+p.radius+'px;font-size:14px;font-weight:500;cursor:pointer;font-family:system-ui,sans-serif;">'+iconSized(ICONS.cart,18)+esc(p.text)+'</button></div>';
+          return '<div style="padding:8px 16px;"><button data-role="tap" data-page="'+esc(p.linkPageId)+'" style="width:100%;height:'+p.height+'px;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:'+p.bgColor+';color:'+p.textColor+';border:none;border-radius:'+p.radius+'px;font-size:14px;font-weight:500;cursor:pointer;font-family:system-ui,sans-serif;">'+iconS(ICONS.cart,18)+esc(p.text)+'</button></div>';
         }},
       { type: 'btn-outline', name: '描边按钮', category: 'btn',
-        defaults: { text: '查看详情', bgColor: '#ffffff', textColor: '#374151', borderColor: '#d1d5db', radius: 8 },
+        defaults: { text: '查看', bgColor: '#ffffff', textColor: '#374151', borderColor: '#d1d5db', radius: 8, height: 40, linkPageId: '' },
         render: function(p) {
-          return '<div style="padding:8px 16px;"><button style="width:100%;background:'+p.bgColor+';color:'+p.textColor+';border:1px solid '+p.borderColor+';padding:10px 20px;border-radius:'+p.radius+'px;font-size:14px;cursor:pointer;font-family:system-ui,sans-serif;">'+esc(p.text)+'</button></div>';
+          return '<div style="padding:8px 16px;"><button data-role="tap" data-page="'+esc(p.linkPageId)+'" style="width:100%;height:'+p.height+'px;background:'+p.bgColor+';color:'+p.textColor+';border:1px solid '+p.borderColor+';border-radius:'+p.radius+'px;font-size:14px;cursor:pointer;font-family:system-ui,sans-serif;">'+esc(p.text)+'</button></div>';
         }},
 
-      { type: 'banner', name: '促销横幅', category: 'ecom',
-        defaults: { title: '限时特惠', subtitle: '全场低至5折起', bgColor1: '#3b82f6', bgColor2: '#8b5cf6', textColor: '#ffffff' },
-        render: function(p) {
-          return '<div style="margin:12px 16px;height:120px;background:linear-gradient(135deg,'+p.bgColor1+','+p.bgColor2+');border-radius:12px;display:flex;align-items:center;justify-content:center;color:'+p.textColor+';font-family:system-ui,sans-serif;"><div style="text-align:center;"><div style="font-size:22px;font-weight:700;margin-bottom:4px;">'+esc(p.title)+'</div><div style="font-size:13px;opacity:.9;">'+esc(p.subtitle)+'</div></div></div>';
-        }},
       { type: 'search-bar', name: '搜索框', category: 'ecom',
-        defaults: { placeholder: '搜索你想要的商品', bgColor: '#f3f4f6' },
+        defaults: { placeholder: '搜索', bgColor: '#f3f4f6', height: 40 },
+        render: function(p, ctx) {
+          var isPreview = ctx && ctx.preview;
+          if (isPreview) {
+            return '<div style="padding:10px 14px;"><div style="display:flex;align-items:center;background:'+p.bgColor+';border-radius:20px;padding:0 14px;height:'+p.height+'px;gap:8px;font-family:system-ui,sans-serif;">'+
+              '<span style="color:#9ca3af;">'+iconS(ICONS.search,16)+'</span>'+
+              '<input class="preview-search-input" data-role="search" type="text" placeholder="'+esc(p.placeholder)+'" style="flex:1;border:none;background:transparent;outline:none;font-size:14px;color:#111;height:100%;"></div></div>';
+          }
+          return '<div style="padding:10px 14px;"><div style="display:flex;align-items:center;background:'+p.bgColor+';border-radius:20px;padding:0 14px;height:'+p.height+'px;gap:8px;font-family:system-ui,sans-serif;">'+
+            '<span style="color:#9ca3af;">'+iconS(ICONS.search,16)+'</span>'+
+            '<span style="flex:1;font-size:14px;color:#9ca3af;">'+esc(p.placeholder)+'</span></div></div>';
+        }},
+      { type: 'banner', name: '横幅', category: 'ecom',
+        defaults: { title: '', subtitle: '', bgColor1: '#3b82f6', bgColor2: '#8b5cf6', textColor: '#ffffff', height: 120, linkPageId: '' },
         render: function(p) {
-          return '<div style="padding:10px 16px;"><div style="display:flex;align-items:center;background:'+p.bgColor+';border-radius:24px;padding:10px 16px;gap:10px;font-family:system-ui,sans-serif;"><span style="color:#9ca3af;">'+iconSized(ICONS.search,18)+'</span><span style="flex:1;font-size:14px;color:#9ca3af;">'+esc(p.placeholder)+'</span></div></div>';
+          var inner = '';
+          if (p.title || p.subtitle) {
+            inner = '<div style="text-align:center;">'+(p.title?'<div style="font-size:20px;font-weight:700;margin-bottom:4px;">'+esc(p.title)+'</div>':'')+(p.subtitle?'<div style="font-size:12px;opacity:.9;">'+esc(p.subtitle)+'</div>':'')+'</div>';
+          }
+          return '<div data-role="tap" data-page="'+esc(p.linkPageId)+'" style="margin:10px 14px;height:'+p.height+'px;background:linear-gradient(135deg,'+p.bgColor1+','+p.bgColor2+');border-radius:12px;display:flex;align-items:center;justify-content:center;color:'+p.textColor+';font-family:system-ui,sans-serif;cursor:pointer;">'+inner+'</div>';
         }},
       { type: 'product-card', name: '商品卡片', category: 'ecom',
-        defaults: { name: '时尚运动鞋 透气舒适', price: '299', originPrice: '599', sales: '1.2万', bgColor: '#ffffff', priceColor: '#ef4444', btnColor: '#3b82f6' },
+        defaults: { name: '', price: '', originPrice: '', sales: '', bgColor: '#ffffff', priceColor: '#ef4444', btnColor: '#3b82f6', imgHeight: 140, linkPageId: '' },
         render: function(p) {
-          return '<div style="margin:8px 16px;background:'+p.bgColor+';border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);font-family:system-ui,sans-serif;">'+
-            '<div style="width:100%;height:160px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:13px;">商品图片</div>'+
-            '<div style="padding:12px;"><div style="font-size:14px;color:#111;line-height:1.4;height:40px;overflow:hidden;">'+esc(p.name)+'</div>'+
-            '<div style="display:flex;align-items:baseline;gap:6px;margin-top:8px;"><span style="color:'+p.priceColor+';font-size:18px;font-weight:700;">¥'+esc(p.price)+'</span><span style="color:#9ca3af;font-size:12px;text-decoration:line-through;">¥'+esc(p.originPrice)+'</span></div>'+
-            '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;"><span style="font-size:12px;color:#9ca3af;">已售 '+esc(p.sales)+'</span>'+
-            '<button style="width:28px;height:28px;border-radius:50%;background:'+p.btnColor+';color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;">'+iconSized(ICONS.plus,14)+'</button></div></div></div>';
+          return '<div data-role="tap" data-page="'+esc(p.linkPageId)+'" data-product="'+esc(p.name)+'" style="margin:6px 14px;background:'+p.bgColor+';border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.06);font-family:system-ui,sans-serif;cursor:pointer;">'+
+            '<div style="width:100%;height:'+p.imgHeight+'px;background:#f0f0f0;"></div>'+
+            '<div style="padding:10px;">'+
+            (p.name?'<div style="font-size:13px;color:#111;line-height:1.4;min-height:18px;">'+esc(p.name)+'</div>':'')+
+            '<div style="display:flex;align-items:baseline;gap:6px;margin-top:6px;">'+
+            (p.price?'<span style="color:'+p.priceColor+';font-size:17px;font-weight:700;">¥'+esc(p.price)+'</span>':'')+
+            (p.originPrice?'<span style="color:#9ca3af;font-size:11px;text-decoration:line-through;">¥'+esc(p.originPrice)+'</span>':'')+
+            '</div>'+
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">'+
+            (p.sales?'<span style="font-size:11px;color:#9ca3af;">'+esc(p.sales)+'</span>':'<span></span>')+
+            '<button style="width:26px;height:26px;border-radius:50%;background:'+p.btnColor+';color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;">'+iconS(ICONS.plus,12)+'</button>'+
+            '</div></div></div>';
         }},
       { type: 'product-list', name: '商品列表项', category: 'ecom',
-        defaults: { name: '无线蓝牙耳机 降噪版', price: '129', sales: '3280', priceColor: '#ef4444', btnColor: '#ef4444', btnText: '马上抢' },
+        defaults: { name: '', price: '', sales: '', priceColor: '#ef4444', btnColor: '#ef4444', btnText: '购买', imgSize: 80, linkPageId: '' },
         render: function(p) {
-          return '<div style="display:flex;gap:12px;padding:12px 16px;background:#fff;font-family:system-ui,sans-serif;">'+
-            '<div style="width:90px;height:90px;background:#f3f4f6;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px;">图片</div>'+
-            '<div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;"><div><div style="font-size:14px;color:#111;line-height:1.4;">'+esc(p.name)+'</div>'+
-            '<div style="font-size:12px;color:#9ca3af;margin-top:4px;">已售 '+esc(p.sales)+' · 好评 98%</div></div>'+
-            '<div style="display:flex;align-items:center;justify-content:space-between;"><span style="color:'+p.priceColor+';font-size:18px;font-weight:700;">¥'+esc(p.price)+'</span>'+
-            '<button style="background:'+p.btnColor+';color:#fff;border:none;padding:6px 14px;border-radius:16px;font-size:12px;cursor:pointer;">'+esc(p.btnText)+'</button></div></div></div>';
-        }},
-      { type: 'price-tag', name: '价格标签', category: 'ecom',
-        defaults: { price: '299.00', originPrice: '599', color: '#ef4444' },
-        render: function(p) {
-          return '<div style="padding:8px 16px;font-family:system-ui,sans-serif;"><span style="color:'+p.color+';font-size:12px;font-weight:600;">¥</span><span style="color:'+p.color+';font-size:24px;font-weight:700;">'+esc(p.price)+'</span><span style="color:#9ca3af;font-size:13px;text-decoration:line-through;margin-left:8px;">¥'+esc(p.originPrice)+'</span></div>';
-        }},
-      { type: 'qty-selector', name: '数量选择器', category: 'ecom',
-        defaults: { value: '1', borderColor: '#e5e7eb' },
-        render: function(p) {
-          return '<div style="padding:8px 16px;font-family:system-ui,sans-serif;"><div style="display:inline-flex;align-items:center;border:1px solid '+p.borderColor+';border-radius:6px;overflow:hidden;"><button style="width:36px;height:36px;border:none;background:#f9fafb;color:#374151;font-size:18px;cursor:pointer;">−</button><span style="width:44px;text-align:center;font-size:15px;color:#111;">'+esc(p.value)+'</span><button style="width:36px;height:36px;border:none;background:#f9fafb;color:#374151;font-size:18px;cursor:pointer;">+</button></div></div>';
+          return '<div data-role="tap" data-page="'+esc(p.linkPageId)+'" data-product="'+esc(p.name)+'" style="display:flex;gap:10px;padding:10px 14px;background:#fff;font-family:system-ui,sans-serif;cursor:pointer;">'+
+            '<div style="width:'+p.imgSize+'px;height:'+p.imgSize+'px;background:#f0f0f0;border-radius:8px;flex-shrink:0;"></div>'+
+            '<div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0;">'+
+            '<div>'+(p.name?'<div style="font-size:13px;color:#111;line-height:1.4;">'+esc(p.name)+'</div>':'')+
+            (p.sales?'<div style="font-size:11px;color:#9ca3af;margin-top:3px;">'+esc(p.sales)+'</div>':'')+'</div>'+
+            '<div style="display:flex;align-items:center;justify-content:space-between;">'+
+            (p.price?'<span style="color:'+p.priceColor+';font-size:16px;font-weight:700;">¥'+esc(p.price)+'</span>':'<span></span>')+
+            '<button style="background:'+p.btnColor+';color:#fff;border:none;padding:5px 12px;border-radius:14px;font-size:11px;cursor:pointer;">'+esc(p.btnText)+'</button>'+
+            '</div></div></div>';
         }},
       { type: 'section-title', name: '分区标题', category: 'ecom',
-        defaults: { title: '热销推荐', moreText: '查看更多', color: '#111827' },
+        defaults: { title: '', moreText: '', color: '#111827', morePage: '' },
         render: function(p) {
-          return '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 6px;font-family:system-ui,sans-serif;"><span style="font-size:16px;font-weight:600;color:'+p.color+';">'+esc(p.title)+'</span><span style="font-size:12px;color:#9ca3af;">'+esc(p.moreText)+' ›</span></div>';
+          return '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px 4px;font-family:system-ui,sans-serif;">'+
+            '<span style="font-size:15px;font-weight:600;color:'+p.color+';">'+esc(p.title)+'</span>'+
+            (p.moreText?'<span data-role="link" data-page="'+esc(p.morePage)+'" style="font-size:11px;color:#9ca3af;cursor:pointer;">'+esc(p.moreText)+' ›</span>':'')+
+            '</div>';
         }},
-      { type: 'spacer', name: '空白间距', category: 'ecom',
-        defaults: { height: 16, bgColor: 'transparent' },
-        render: function(p) { return '<div style="height:'+p.height+'px;background:'+p.bgColor+';"></div>'; } },
+      { type: 'spacer', name: '间距', category: 'ecom',
+        defaults: { height: 12, bgColor: 'transparent' },
+        render: function(p) { return '<div style="height:'+p.height+'px;background:'+p.bgColor+';"></div>'; }},
+      { type: 'text-block', name: '文字块', category: 'ecom',
+        defaults: { text: '', color: '#374151', fontSize: 14, align: 'left', padding: 14 },
+        render: function(p) {
+          return '<div style="padding:'+p.padding+'px;font-size:'+p.fontSize+'px;color:'+p.color+';text-align:'+p.align+';line-height:1.6;font-family:system-ui,sans-serif;word-break:break-word;">'+esc(p.text)+'</div>';
+        }},
     ];
 
-    const CATEGORIES = [
+    var CATEGORIES = [
       { id: 'icons', label: '图标' },
       { id: 'nav', label: '导航' },
       { id: 'btn', label: '按钮' },
       { id: 'ecom', label: '电商' },
     ];
-    const COLOR_PRESETS = ['#ef4444','#f59e0b','#22c55e','#3b82f6','#8b5cf6','#ec4899','#111827','#6b7280','#ffffff','#f3f4f6'];
+    var COLOR_PRESETS = ['#ef4444','#f59e0b','#22c55e','#3b82f6','#8b5cf6','#ec4899','#111827','#6b7280','#ffffff','#f3f4f6'];
+    var STORAGE_KEY = 'diy-builder-v4';
 
-    const STORAGE_KEY = 'diy-builder-v3';
     var projects = {};
     var currentProjectId = null;
-    var elements = [];
+    var currentPageId = null;
     var selectedId = null;
     var currentTab = 'ecom';
-    var phoneMode = true;
+    var previewMode = false;
     var dragType = null;
+    var searchFilter = '';
+    var confirmCallback = null;
 
     function esc(s) {
       return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
-    function uid() { return 'el_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+    function uid(prefix) { return (prefix||'el') + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
     function toast(msg) {
       var t = document.getElementById('toast');
       t.textContent = msg;
@@ -672,69 +866,133 @@
       for (var i=0;i<COMPONENT_DEFS.length;i++) if (COMPONENT_DEFS[i].type===type) return COMPONENT_DEFS[i];
       return null;
     }
+    function getProject() { return projects[currentProjectId] || null; }
+    function getPage() {
+      var p = getProject();
+      if (!p || !p.pages) return null;
+      for (var i=0;i<p.pages.length;i++) if (p.pages[i].id===currentPageId) return p.pages[i];
+      return p.pages[0] || null;
+    }
+    function getElements() {
+      var page = getPage();
+      return page ? page.elements : [];
+    }
+    function setElements(els) {
+      var page = getPage();
+      if (page) page.elements = els;
+    }
 
+    // ========== 弹窗 ==========
+    function showModal(id) { document.getElementById(id).classList.add('show'); }
+    function hideModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    function openCreateModal() {
+      document.getElementById('createTitle').value = '';
+      showModal('createModal');
+      setTimeout(function(){ document.getElementById('createTitle').focus(); }, 100);
+    }
+    function confirmCreate() {
+      var title = document.getElementById('createTitle').value.trim() || '未命名项目';
+      hideModal('createModal');
+      var id = uid('p');
+      var pageId = uid('page');
+      currentProjectId = id;
+      currentPageId = pageId;
+      selectedId = null;
+      previewMode = false;
+      projects[id] = {
+        id: id,
+        title: title,
+        pages: [{ id: pageId, name: '首页', elements: [] }],
+        updated_at: new Date().toISOString(),
+        created_at: new Date().toISOString()
+      };
+      persist();
+      document.getElementById('editorTitle').textContent = title;
+      document.getElementById('saveStatus').textContent = '';
+      showEditor();
+      renderAll();
+      toast('已创建，开始搭建');
+    }
+
+    function showConfirm(title, msg, onOk) {
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmMsg').textContent = msg;
+      confirmCallback = onOk;
+      document.getElementById('confirmOkBtn').onclick = function() {
+        hideModal('confirmModal');
+        if (confirmCallback) confirmCallback();
+        confirmCallback = null;
+      };
+      showModal('confirmModal');
+    }
+    function showAlert(title, msg) {
+      document.getElementById('alertTitle').textContent = title || '提示';
+      document.getElementById('alertMsg').textContent = msg;
+      showModal('alertModal');
+    }
+
+    function openClearModal() {
+      showConfirm('清空本页', '确定清空当前页面的所有组件？', function() {
+        setElements([]);
+        selectedId = null;
+        renderCanvas();
+        renderProps();
+      });
+    }
+
+    // ========== 存储 ==========
     function loadProjects() {
       try { projects = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { projects = {}; }
     }
-    function persistProjects() {
+    function persist() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
     }
 
+    // ========== 导航 ==========
     function showHome() {
       document.getElementById('homeView').style.display = 'flex';
       document.getElementById('editorView').classList.remove('show');
+      previewMode = false;
     }
     function showEditor() {
       document.getElementById('homeView').style.display = 'none';
       document.getElementById('editorView').classList.add('show');
     }
     function backToHome() {
-      if (elements.length && !confirm('返回首页？未保存的修改将丢失（请先点保存）')) return;
-      showHome();
-    }
-
-    function createNewProject() {
-      var title = prompt('项目名称', '我的电商页面') || '我的电商页面';
-      var id = 'p_' + Date.now().toString(36);
-      currentProjectId = id;
-      elements = [];
-      selectedId = null;
-      projects[id] = { id: id, title: title, elements: [], updated_at: new Date().toISOString(), created_at: new Date().toISOString() };
-      persistProjects();
-      document.getElementById('editorTitle').textContent = title;
-      document.getElementById('saveStatus').textContent = '新项目';
-      showEditor();
-      renderPalette();
-      renderCanvas();
-      renderProps();
-      toast('已创建空白项目，从左侧拖入组件开始搭建');
+      if (getElements().length) {
+        showConfirm('返回首页', '未保存的修改可能丢失，确定返回？', function(){ showHome(); });
+      } else {
+        showHome();
+      }
     }
 
     function openProject(id) {
       var p = projects[id];
       if (!p) return;
+      // 兼容旧数据
+      if (!p.pages) {
+        p.pages = [{ id: uid('page'), name: '首页', elements: p.elements || [] }];
+        delete p.elements;
+      }
       currentProjectId = id;
-      elements = JSON.parse(JSON.stringify(p.elements || []));
+      currentPageId = p.pages[0].id;
       selectedId = null;
+      previewMode = false;
       document.getElementById('editorTitle').textContent = p.title;
-      document.getElementById('saveStatus').textContent = '已打开';
-      hideProjectsModal();
+      hideModal('projectsModal');
       showEditor();
-      renderPalette();
-      renderCanvas();
-      renderProps();
+      renderAll();
       toast('已打开：' + p.title);
     }
 
     function saveProject() {
       if (!currentProjectId) return;
-      var p = projects[currentProjectId];
-      if (!p) return;
-      p.elements = JSON.parse(JSON.stringify(elements));
+      var p = getProject();
       p.updated_at = new Date().toISOString();
-      persistProjects();
-      document.getElementById('saveStatus').textContent = '已保存 ' + new Date().toLocaleTimeString();
-      toast('项目已保存');
+      persist();
+      document.getElementById('saveStatus').textContent = '已保存';
+      toast('已保存');
       var html = generateFullHTML();
       fetch('/api/projects', {
         method: 'POST',
@@ -745,37 +1003,79 @@
 
     function deleteProject(id, e) {
       e.stopPropagation();
-      if (!confirm('确定删除该项目？')) return;
-      delete projects[id];
-      persistProjects();
-      renderProjectsList();
-      if (currentProjectId === id) { currentProjectId = null; showHome(); }
-      toast('已删除');
+      showConfirm('删除项目', '确定删除该项目？此操作不可恢复。', function() {
+        delete projects[id];
+        persist();
+        renderProjectsList();
+        if (currentProjectId === id) { currentProjectId = null; showHome(); }
+        toast('已删除');
+      });
     }
 
     function showProjectsModal() {
       loadProjects();
       renderProjectsList();
-      document.getElementById('projectsModal').classList.add('show');
-    }
-    function hideProjectsModal() {
-      document.getElementById('projectsModal').classList.remove('show');
+      showModal('projectsModal');
     }
     function renderProjectsList() {
-      var list = Object.keys(projects).map(function(k){ return projects[k]; }).sort(function(a,b){ return new Date(b.updated_at) - new Date(a.updated_at); });
+      var list = Object.keys(projects).map(function(k){ return projects[k]; })
+        .sort(function(a,b){ return new Date(b.updated_at)-new Date(a.updated_at); });
       var el = document.getElementById('projectsList');
       if (!list.length) {
-        el.innerHTML = '<div class="empty-projects">暂无项目<br>点击下方「新建项目」开始</div>';
+        el.innerHTML = '<div class="empty-projects">暂无项目</div>';
         return;
       }
       el.innerHTML = list.map(function(p) {
+        var pageCount = (p.pages && p.pages.length) || 1;
+        var elCount = 0;
+        if (p.pages) p.pages.forEach(function(pg){ elCount += (pg.elements||[]).length; });
+        else elCount = (p.elements||[]).length;
         return '<div class="project-item" onclick="openProject(\''+p.id+'\')">'+
           '<div class="info"><div class="title">'+esc(p.title)+'</div>'+
-          '<div class="meta">'+(p.elements||[]).length+' 个组件 · '+new Date(p.updated_at).toLocaleString()+'</div></div>'+
-          '<button class="del-btn" onclick="deleteProject(\''+p.id+'\', event)" title="删除">🗑</button></div>';
+          '<div class="meta">'+pageCount+' 页 · '+elCount+' 组件 · '+new Date(p.updated_at).toLocaleString()+'</div></div>'+
+          '<button class="del-btn" onclick="deleteProject(\''+p.id+'\',event)">🗑</button></div>';
       }).join('');
     }
 
+    // ========== 多页面 ==========
+    function renderPagesBar() {
+      var p = getProject();
+      var bar = document.getElementById('pagesBar');
+      if (!p || !p.pages) { bar.innerHTML = ''; return; }
+      bar.innerHTML = p.pages.map(function(pg) {
+        return '<button class="page-tab '+(pg.id===currentPageId?'active':'')+'" onclick="switchPage(\''+pg.id+'\')">'+esc(pg.name)+'</button>';
+      }).join('') +
+        '<button class="page-add" onclick="openNewPageModal()">+ 新页面</button>';
+    }
+    function switchPage(pageId) {
+      currentPageId = pageId;
+      selectedId = null;
+      searchFilter = '';
+      renderPagesBar();
+      renderCanvas();
+      renderProps();
+    }
+    function openNewPageModal() {
+      document.getElementById('newPageName').value = '';
+      showModal('newPageModal');
+      setTimeout(function(){ document.getElementById('newPageName').focus(); }, 100);
+    }
+    function confirmAddPage() {
+      var name = document.getElementById('newPageName').value.trim() || '新页面';
+      hideModal('newPageModal');
+      var p = getProject();
+      var pageId = uid('page');
+      p.pages.push({ id: pageId, name: name, elements: [] });
+      currentPageId = pageId;
+      selectedId = null;
+      persist();
+      renderPagesBar();
+      renderCanvas();
+      renderProps();
+      toast('已添加页面：' + name);
+    }
+
+    // ========== 组件库 ==========
     function renderPalette() {
       var tabs = document.getElementById('paletteTabs');
       tabs.innerHTML = CATEGORIES.map(function(c) {
@@ -783,64 +1083,165 @@
       }).join('');
       var list = document.getElementById('paletteList');
       var comps = COMPONENT_DEFS.filter(function(d){ return d.category===currentTab; });
-      list.innerHTML = '<div class="palette-hint">按住组件拖到中间画布，或点击快速添加</div>' +
+      list.innerHTML = '<div class="palette-hint">拖到手机画布，或点击添加</div>' +
         comps.map(function(d) {
-          return '<div class="comp-card" draggable="true" data-type="'+d.type+'" ondragstart="onPaletteDragStart(event,\''+d.type+'\')" onclick="addComponent(\''+d.type+'\')">'+
-            '<div class="comp-preview">'+d.render(d.defaults)+'</div>'+
+          return '<div class="comp-card" draggable="true" ondragstart="onDragStart(event,\''+d.type+'\')" onclick="addComponent(\''+d.type+'\')">'+
+            '<div class="comp-preview">'+d.render(d.defaults, {preview:false})+'</div>'+
             '<div class="comp-name">'+esc(d.name)+'</div></div>';
         }).join('');
     }
     function switchTab(id) { currentTab = id; renderPalette(); }
 
     function addComponent(type) {
+      if (previewMode) { toast('请先退出预览模式'); return; }
       var def = getDef(type);
       if (!def) return;
-      var el = { id: uid(), type: type, props: Object.assign({}, def.defaults) };
-      elements.push(el);
+      var els = getElements();
+      var el = { id: uid('el'), type: type, props: Object.assign({}, def.defaults) };
+      els.push(el);
+      setElements(els);
       selectedId = el.id;
       renderCanvas();
       renderProps();
-      toast('已添加：' + def.name);
+      toast('已添加');
     }
-    function onPaletteDragStart(e, type) {
+    function onDragStart(e, type) {
       dragType = type;
       e.dataTransfer.setData('text/plain', type);
       e.dataTransfer.effectAllowed = 'copy';
     }
-    function setupDropZone() {
+    function setupDrop() {
       var zone = document.getElementById('dropZone');
-      var canvas = document.getElementById('canvas');
-      canvas.addEventListener('dragover', function(e){ e.preventDefault(); zone.classList.add('drag-over'); });
-      canvas.addEventListener('dragenter', function(e){ e.preventDefault(); zone.classList.add('drag-over'); });
-      canvas.addEventListener('dragleave', function(e){ if (!canvas.contains(e.relatedTarget)) zone.classList.remove('drag-over'); });
-      canvas.addEventListener('drop', function(e){
+      var screen = document.getElementById('phoneScreen');
+      screen.addEventListener('dragover', function(e){ e.preventDefault(); if(!previewMode) zone.classList.add('drag-over'); });
+      screen.addEventListener('dragleave', function(e){ if (!screen.contains(e.relatedTarget)) zone.classList.remove('drag-over'); });
+      screen.addEventListener('drop', function(e){
         e.preventDefault();
         zone.classList.remove('drag-over');
+        if (previewMode) return;
         var type = e.dataTransfer.getData('text/plain') || dragType;
         if (type) addComponent(type);
         dragType = null;
       });
     }
 
+    // ========== 画布渲染 ==========
     function renderCanvas() {
       var zone = document.getElementById('dropZone');
-      if (!elements.length) {
-        zone.innerHTML = '<div class="empty-hint"><div style="font-size:32px;opacity:.4;">↓</div><div>从左侧拖入组件</div><div style="font-size:12px;">或点击组件快速添加</div></div>';
+      var els = getElements();
+      var ctx = { preview: previewMode };
+
+      // 搜索过滤（仅预览）
+      var filtered = els;
+      if (previewMode && searchFilter) {
+        filtered = els.filter(function(el) {
+          if (el.type !== 'product-card' && el.type !== 'product-list') return true;
+          var name = (el.props.name || '').toLowerCase();
+          return name.indexOf(searchFilter.toLowerCase()) >= 0;
+        });
+        // 始终显示非商品组件
+        filtered = els.filter(function(el) {
+          if (el.type === 'product-card' || el.type === 'product-list') {
+            var name = (el.props.name || '').toLowerCase();
+            return !searchFilter || name.indexOf(searchFilter.toLowerCase()) >= 0;
+          }
+          return true;
+        });
+      }
+
+      if (!els.length) {
+        zone.innerHTML = '<div class="empty-hint"><div style="font-size:28px;opacity:.35;">↓</div><div>拖入组件到这里</div></div>';
         return;
       }
-      zone.innerHTML = elements.map(function(el) {
-        var def = getDef(el.type);
-        if (!def) return '';
-        return '<div class="canvas-el '+(el.id===selectedId?'selected':'')+'" data-id="'+el.id+'" onclick="selectEl(\''+el.id+'\', event)">'+
-          '<div class="el-actions">'+
-            '<button onclick="moveEl(\''+el.id+'\',-1,event)" title="上移">↑</button>'+
-            '<button onclick="moveEl(\''+el.id+'\',1,event)" title="下移">↓</button>'+
-            '<button class="btn-del" onclick="removeEl(\''+el.id+'\',event)" title="删除">×</button>'+
-          '</div>'+def.render(el.props)+'</div>';
-      }).join('');
+
+      if (previewMode) {
+        zone.innerHTML = filtered.map(function(el) {
+          var def = getDef(el.type);
+          if (!def) return '';
+          return '<div class="canvas-el" data-id="'+el.id+'">'+def.render(el.props, ctx)+'</div>';
+        }).join('');
+        bindPreviewEvents(zone);
+      } else {
+        zone.innerHTML = els.map(function(el) {
+          var def = getDef(el.type);
+          if (!def) return '';
+          var linkLabel = getLinkLabel(el);
+          return '<div class="canvas-el '+(el.id===selectedId?'selected':'')+'" data-id="'+el.id+'" onclick="selectEl(\''+el.id+'\',event)">'+
+            '<div class="el-actions">'+
+              '<button onclick="moveEl(\''+el.id+'\',-1,event)">↑</button>'+
+              '<button onclick="moveEl(\''+el.id+'\',1,event)">↓</button>'+
+              '<button class="btn-del" onclick="removeEl(\''+el.id+'\',event)">×</button>'+
+            '</div>'+
+            (linkLabel ? '<span class="link-badge">→ '+esc(linkLabel)+'</span>' : '')+
+            def.render(el.props, ctx)+'</div>';
+        }).join('');
+      }
+    }
+
+    function getLinkLabel(el) {
+      var p = el.props;
+      var ids = [p.linkPageId, p.menu1Page, p.menu2Page, p.cartPage, p.page1, p.page2, p.page3, p.page4, p.backPage, p.morePage];
+      var proj = getProject();
+      if (!proj) return '';
+      for (var i=0;i<ids.length;i++) {
+        if (ids[i]) {
+          for (var j=0;j<proj.pages.length;j++) {
+            if (proj.pages[j].id === ids[i]) return proj.pages[j].name;
+          }
+        }
+      }
+      return '';
+    }
+
+    function bindPreviewEvents(zone) {
+      // 搜索
+      var inputs = zone.querySelectorAll('[data-role="search"]');
+      for (var i=0;i<inputs.length;i++) {
+        inputs[i].addEventListener('input', function(e) {
+          searchFilter = e.target.value;
+          renderCanvas();
+          // 恢复焦点与内容
+          var again = document.querySelector('[data-role="search"]');
+          if (again) { again.value = searchFilter; again.focus(); }
+        });
+      }
+      // 跳转
+      zone.addEventListener('click', function(e) {
+        var target = e.target.closest('[data-page]');
+        if (!target) target = e.target.closest('[data-role="tap"],[data-role="link"]');
+        if (!target) return;
+        var pageId = target.getAttribute('data-page');
+        if (pageId) {
+          e.preventDefault();
+          e.stopPropagation();
+          navigateToPage(pageId);
+        }
+      });
+    }
+
+    function navigateToPage(pageId) {
+      var p = getProject();
+      if (!p) return;
+      var found = false;
+      for (var i=0;i<p.pages.length;i++) {
+        if (p.pages[i].id === pageId) { found = true; break; }
+      }
+      if (!found) {
+        toast('未设置跳转页面');
+        return;
+      }
+      searchFilter = '';
+      currentPageId = pageId;
+      renderPagesBar();
+      renderCanvas();
+      toast('进入：' + (function(){
+        for (var i=0;i<p.pages.length;i++) if (p.pages[i].id===pageId) return p.pages[i].name;
+        return '';
+      })());
     }
 
     function selectEl(id, e) {
+      if (previewMode) return;
       if (e) e.stopPropagation();
       selectedId = id;
       renderCanvas();
@@ -848,79 +1249,123 @@
     }
     function removeEl(id, e) {
       e.stopPropagation();
-      elements = elements.filter(function(el){ return el.id !== id; });
+      var els = getElements().filter(function(el){ return el.id !== id; });
+      setElements(els);
       if (selectedId === id) selectedId = null;
       renderCanvas();
       renderProps();
     }
     function moveEl(id, dir, e) {
       e.stopPropagation();
+      var els = getElements().slice();
       var idx = -1;
-      for (var i=0;i<elements.length;i++) if (elements[i].id===id) { idx=i; break; }
+      for (var i=0;i<els.length;i++) if (els[i].id===id) { idx=i; break; }
       if (idx < 0) return;
-      var newIdx = idx + dir;
-      if (newIdx < 0 || newIdx >= elements.length) return;
-      var tmp = elements[idx];
-      elements[idx] = elements[newIdx];
-      elements[newIdx] = tmp;
+      var ni = idx + dir;
+      if (ni < 0 || ni >= els.length) return;
+      var t = els[idx]; els[idx] = els[ni]; els[ni] = t;
+      setElements(els);
       renderCanvas();
-    }
-    function clearCanvas() {
-      if (!elements.length) return;
-      if (!confirm('确定清空画布上的所有组件？')) return;
-      elements = [];
-      selectedId = null;
-      renderCanvas();
-      renderProps();
-    }
-    function togglePhoneMode() {
-      phoneMode = !phoneMode;
-      document.getElementById('canvas').classList.toggle('phone', phoneMode);
     }
 
+    // ========== 属性面板 ==========
     function renderProps() {
       var body = document.getElementById('propsBody');
+      if (previewMode) {
+        body.innerHTML = '<div class="props-empty">预览模式中<br>点击组件可跳转页面<br>搜索框可实时筛选商品</div>';
+        return;
+      }
+      var els = getElements();
       var el = null;
-      for (var i=0;i<elements.length;i++) if (elements[i].id===selectedId) { el=elements[i]; break; }
+      for (var i=0;i<els.length;i++) if (els[i].id===selectedId) { el=els[i]; break; }
       if (!el) {
-        body.innerHTML = '<div class="props-empty">选中画布中的组件<br>即可修改颜色、文字等</div>';
+        body.innerHTML = '<div class="props-empty">选中组件后<br>可改颜色、大小、跳转页面</div>';
         return;
       }
       var def = getDef(el.type);
       var props = el.props;
-      var html = '<div style="font-size:13px;font-weight:600;margin-bottom:14px;color:#e2e8f0;">'+esc(def.name)+'</div>';
+      var html = '<div style="font-size:12px;font-weight:600;margin-bottom:12px;color:#e2e8f0;">'+esc(def.name)+'</div>';
+
+      // 跳转页面选择（通用）
+      var pageLinkKeys = getPageLinkKeys(el.type);
+      var proj = getProject();
+      var pageOptions = '<option value="">不跳转</option>';
+      if (proj && proj.pages) {
+        proj.pages.forEach(function(pg) {
+          pageOptions += '<option value="'+pg.id+'">'+esc(pg.name)+'</option>';
+        });
+      }
+
       var keys = Object.keys(props);
       for (var k=0;k<keys.length;k++) {
         var key = keys[k];
         var val = props[key];
         var isColor = /color|Color|bgColor|textColor|borderColor|priceColor|btnColor|activeColor|inactiveColor/i.test(key);
+        var isPage = pageLinkKeys.indexOf(key) >= 0 || key === 'linkPageId';
+        var isSize = /size|height|radius|imgHeight|imgSize|fontSize|padding/i.test(key);
         var label = propLabel(key);
-        if (isColor) {
+
+        if (isPage) {
+          html += '<div class="prop-group"><label>'+label+'</label><select onchange="updateProp(\''+key+'\', this.value)">';
+          if (proj && proj.pages) {
+            html += '<option value="">不跳转</option>';
+            proj.pages.forEach(function(pg) {
+              html += '<option value="'+pg.id+'" '+(val===pg.id?'selected':'')+'>'+esc(pg.name)+'</option>';
+            });
+          }
+          html += '</select></div>';
+        } else if (isColor) {
           html += '<div class="prop-group"><label>'+label+'</label><div class="color-row">'+
             '<input type="color" value="'+toHex(val)+'" oninput="updateProp(\''+key+'\', this.value)">'+
             '<input type="text" value="'+esc(val)+'" onchange="updateProp(\''+key+'\', this.value)" style="flex:1;"></div>'+
             '<div class="color-presets">'+COLOR_PRESETS.map(function(c){
               return '<div class="color-swatch" style="background:'+c+';'+(c==='#ffffff'?'border:1px solid #ccc;':'')+'" onclick="updateProp(\''+key+'\',\''+c+'\')"></div>';
             }).join('')+'</div></div>';
-        } else if (typeof val === 'number' || key === 'size' || key === 'height' || key === 'radius' || key === 'value') {
-          html += '<div class="prop-group"><label>'+label+'</label><input type="number" value="'+val+'" onchange="updateProp(\''+key+'\', +this.value||this.value)"></div>';
+        } else if (isSize || typeof val === 'number') {
+          html += '<div class="prop-group"><label>'+label+'</label><input type="number" min="0" value="'+val+'" onchange="updateProp(\''+key+'\', +this.value||0)"></div>';
         } else {
-          html += '<div class="prop-group"><label>'+label+'</label><input type="text" value="'+esc(val)+'" onchange="updateProp(\''+key+'\', this.value)"></div>';
+          html += '<div class="prop-group"><label>'+label+'</label><input type="text" value="'+esc(val)+'" onchange="updateProp(\''+key+'\', this.value)" placeholder="留空则不显示"></div>';
         }
       }
       body.innerHTML = html;
     }
 
+    function getPageLinkKeys(type) {
+      var map = {
+        'nav-top': ['menu1Page','menu2Page','cartPage'],
+        'nav-bottom': ['page1','page2','page3','page4'],
+        'nav-back': ['backPage'],
+        'section-title': ['morePage'],
+        'btn-primary': ['linkPageId'],
+        'btn-cart': ['linkPageId'],
+        'btn-outline': ['linkPageId'],
+        'banner': ['linkPageId'],
+        'product-card': ['linkPageId'],
+        'product-list': ['linkPageId'],
+        'icon-cart': ['linkPageId'],
+        'icon-heart': ['linkPageId'],
+        'icon-search': ['linkPageId'],
+        'icon-user': ['linkPageId'],
+        'icon-home': ['linkPageId'],
+        'icon-grid': ['linkPageId'],
+      };
+      return map[type] || ['linkPageId'];
+    }
+
     function propLabel(key) {
       var map = {
-        color:'颜色', size:'尺寸', bgColor:'背景色', textColor:'文字颜色',
-        logoText:'Logo文字', menu1:'菜单1', menu2:'菜单2',
-        text:'按钮文字', radius:'圆角', borderColor:'边框色',
+        color:'颜色', size:'图标大小', bgColor:'背景色', textColor:'文字颜色',
+        logoText:'Logo', menu1:'菜单1', menu2:'菜单2',
+        menu1Page:'菜单1跳转', menu2Page:'菜单2跳转', cartPage:'购物车跳转',
+        text:'按钮文字', radius:'圆角', borderColor:'边框色', height:'高度',
         title:'标题', subtitle:'副标题', bgColor1:'渐变色1', bgColor2:'渐变色2',
-        placeholder:'占位文字', name:'商品名称', price:'价格', originPrice:'原价',
-        sales:'销量', priceColor:'价格颜色', btnColor:'按钮颜色', btnText:'按钮文字',
-        value:'数量', moreText:'更多文字', height:'高度',
-        activeColor:'选中色', inactiveColor:'未选中色'
+        placeholder:'占位提示', name:'商品名称', price:'价格', originPrice:'原价',
+        sales:'销量文案', priceColor:'价格颜色', btnColor:'按钮颜色', btnText:'按钮文字',
+        imgHeight:'图片高度', imgSize:'图片尺寸', linkPageId:'点击跳转页面',
+        tab1:'Tab1', tab2:'Tab2', tab3:'Tab3', tab4:'Tab4',
+        page1:'Tab1跳转', page2:'Tab2跳转', page3:'Tab3跳转', page4:'Tab4跳转',
+        activeColor:'选中色', inactiveColor:'未选中色', backPage:'返回跳转',
+        moreText:'更多文字', morePage:'更多跳转', fontSize:'字号', align:'对齐', padding:'内边距'
       };
       return map[key] || key;
     }
@@ -930,59 +1375,111 @@
       return '#3b82f6';
     }
     function updateProp(key, value) {
-      var el = null;
-      for (var i=0;i<elements.length;i++) if (elements[i].id===selectedId) { el=elements[i]; break; }
-      if (!el) return;
-      el.props[key] = value;
+      var els = getElements();
+      for (var i=0;i<els.length;i++) {
+        if (els[i].id === selectedId) {
+          els[i].props[key] = value;
+          break;
+        }
+      }
       renderCanvas();
-      if (/color|Color/i.test(key)) renderProps();
+      if (/color|Color|Page|linkPage/i.test(key)) renderProps();
     }
 
+    // ========== 预览模式 ==========
+    function togglePreviewMode() {
+      previewMode = !previewMode;
+      selectedId = null;
+      searchFilter = '';
+      var btn = document.getElementById('btnPreviewMode');
+      var hint = document.getElementById('modeHint');
+      if (previewMode) {
+        btn.textContent = '退出预览';
+        btn.className = 'btn-primary';
+        hint.textContent = '预览模式 · 点击可跳转 · 搜索可筛选';
+        document.getElementById('phoneScreen').classList.add('preview-mode');
+      } else {
+        btn.textContent = '预览交互';
+        btn.className = 'btn-secondary';
+        hint.textContent = '编辑模式 · 拖入组件';
+        document.getElementById('phoneScreen').classList.remove('preview-mode');
+      }
+      renderCanvas();
+      renderProps();
+    }
+
+    // ========== 导出 ==========
     function generateFullHTML() {
-      var title = (projects[currentProjectId] && projects[currentProjectId].title) || '我的页面';
-      var body = elements.map(function(el) {
-        var def = getDef(el.type);
-        return def ? def.render(el.props) : '';
+      var proj = getProject();
+      if (!proj) return '';
+      var title = proj.title || '我的页面';
+      // 导出时生成带简单 JS 的多页 HTML
+      var pagesData = proj.pages.map(function(pg) {
+        var body = (pg.elements||[]).map(function(el) {
+          var def = getDef(el.type);
+          return def ? def.render(el.props, { preview: true }) : '';
+        }).join('\n');
+        return { id: pg.id, name: pg.name, html: body };
+      });
+
+      var pagesJson = JSON.stringify(pagesData.map(function(p){ return { id: p.id, name: p.name }; }));
+      var pagesHtml = pagesData.map(function(p, i) {
+        return '<div class="page" id="page_'+p.id+'" style="'+(i===0?'':'display:none;')+'">'+p.html+'</div>';
       }).join('\n');
-      return '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>'+esc(title)+'</title>\n<style>\n* { margin:0; padding:0; box-sizing:border-box; }\nbody { font-family:system-ui,-apple-system,sans-serif; background:#f5f5f5; color:#111; max-width:430px; margin:0 auto; min-height:100vh; }\n</style>\n</head>\n<body>\n'+body+'\n</body>\n</html>';
+
+      return '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">\n<title>'+esc(title)+'</title>\n<style>\n*{margin:0;padding:0;box-sizing:border-box;}\nbody{font-family:system-ui,-apple-system,sans-serif;background:#f5f5f5;color:#111;max-width:430px;margin:0 auto;min-height:100vh;}\n.preview-search-input{flex:1;border:none;background:transparent;outline:none;font-size:14px;color:#111;}\n</style>\n</head>\n<body>\n'+pagesHtml+'\n<script>\n'+
+        'var pages='+pagesJson+';\n'+
+        'function goPage(id){\n'+
+        '  if(!id)return;\n'+
+        '  document.querySelectorAll(".page").forEach(function(el){el.style.display="none";});\n'+
+        '  var t=document.getElementById("page_"+id);\n'+
+        '  if(t)t.style.display="block";\n'+
+        '  window.scrollTo(0,0);\n'+
+        '}\n'+
+        'document.body.addEventListener("click",function(e){\n'+
+        '  var t=e.target.closest("[data-page]");\n'+
+        '  if(t){var id=t.getAttribute("data-page");if(id){e.preventDefault();goPage(id);}}\n'+
+        '});\n'+
+        'document.body.addEventListener("input",function(e){\n'+
+        '  if(e.target.getAttribute("data-role")==="search"){\n'+
+        '    var q=e.target.value.toLowerCase();\n'+
+        '    var page=e.target.closest(".page");\n'+
+        '    if(!page)return;\n'+
+        '    page.querySelectorAll("[data-product]").forEach(function(el){\n'+
+        '      var name=(el.getAttribute("data-product")||"").toLowerCase();\n'+
+        '      el.style.display=(!q||name.indexOf(q)>=0)?"":"none";\n'+
+        '    });\n'+
+        '  }\n'+
+        '});\n'+
+        '<\/script>\n</body>\n</html>';
     }
 
     function exportHTML() {
-      if (!elements.length) { alert('画布为空，请先添加组件'); return; }
+      var proj = getProject();
+      if (!proj) return;
+      var hasContent = false;
+      proj.pages.forEach(function(pg){ if (pg.elements && pg.elements.length) hasContent = true; });
+      if (!hasContent) { showAlert('提示', '画布为空，请先添加组件'); return; }
       var html = generateFullHTML();
-      var title = (projects[currentProjectId] && projects[currentProjectId].title) || 'my-page';
       var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
       var a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = title.replace(/[\\/:*?"<>|]/g, '_') + '.html';
+      a.download = (proj.title || 'page').replace(/[\\/:*?"<>|]/g, '_') + '.html';
       a.click();
       URL.revokeObjectURL(a.href);
-      toast('代码已导出');
-    }
-
-    function previewPage() {
-      var html = generateFullHTML();
-      document.getElementById('previewModal').classList.add('show');
-      document.getElementById('previewFrame').srcdoc = html;
-    }
-    function hidePreviewModal() {
-      document.getElementById('previewModal').classList.remove('show');
+      toast('已导出（含多页跳转与搜索）');
     }
 
     function showPublishModal() {
-      if (!currentProjectId) { alert('请先保存项目'); return; }
-      if (!elements.length) { alert('画布为空'); return; }
+      if (!currentProjectId) { showAlert('提示', '请先保存项目'); return; }
       document.getElementById('publishError').textContent = '';
       document.getElementById('publishSlug').value = '';
       document.getElementById('publishUrlPreview').textContent = location.origin + '/p/xxx';
-      document.getElementById('publishModal').classList.add('show');
+      showModal('publishModal');
       document.getElementById('publishSlug').oninput = function(e) {
         var s = e.target.value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
         document.getElementById('publishUrlPreview').textContent = location.origin + '/p/' + (s || 'xxx');
       };
-    }
-    function hidePublishModal() {
-      document.getElementById('publishModal').classList.remove('show');
     }
     function doPublish() {
       var slug = document.getElementById('publishSlug').value.trim().toLowerCase();
@@ -997,7 +1494,7 @@
       fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: currentProjectId, title: projects[currentProjectId].title, html: html })
+        body: JSON.stringify({ id: currentProjectId, title: getProject().title, html: html })
       }).then(function() {
         return fetch('/api/projects/' + currentProjectId + '/publish', {
           method: 'POST',
@@ -1007,25 +1504,41 @@
       }).then(function(res) {
         return res.json().then(function(data) {
           if (!res.ok) throw new Error(data.error || '发布失败');
-          hidePublishModal();
-          alert('发布成功！\n' + location.origin + data.url);
-          toast('发布成功');
+          hideModal('publishModal');
+          showAlert('发布成功', location.origin + data.url);
         });
-      }).catch(function(e) {
-        err.textContent = e.message;
-      });
+      }).catch(function(e) { err.textContent = e.message; });
+    }
+
+    function renderAll() {
+      renderPagesBar();
+      renderPalette();
+      renderCanvas();
+      renderProps();
+      var btn = document.getElementById('btnPreviewMode');
+      btn.textContent = '预览交互';
+      btn.className = 'btn-secondary';
+      document.getElementById('modeHint').textContent = '编辑模式 · 拖入组件';
     }
 
     function init() {
       loadProjects();
       renderPalette();
-      setupDropZone();
-      document.getElementById('canvas').addEventListener('click', function(e) {
-        if (e.target.id === 'canvas' || e.target.id === 'dropZone' || e.target.classList.contains('empty-hint')) {
+      setupDrop();
+      document.getElementById('phoneScreen').addEventListener('click', function(e) {
+        if (previewMode) return;
+        if (e.target.id === 'dropZone' || e.target.classList.contains('empty-hint') || e.target.id === 'phoneScreen') {
           selectedId = null;
           renderCanvas();
           renderProps();
         }
+      });
+      // Enter 确认创建
+      document.getElementById('createTitle').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') confirmCreate();
+      });
+      document.getElementById('newPageName').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') confirmAddPage();
       });
     }
     init();
