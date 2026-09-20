@@ -592,9 +592,10 @@
         </div>
       </div>
     </div>
+  </div>
+  <!-- /editorView -->
 
-
-    <!-- 新建项目弹窗 -->
+  <!-- 新建项目弹窗 -->
   <div class="modal-mask" id="createModal">
     <div class="modal">
       <div class="modal-header">
@@ -979,8 +980,8 @@
     }
 
     // ========== 弹窗 ==========
-    function showModal(id) { document.getElementById(id).classList.add('show'); }
-    function hideModal(id) { document.getElementById(id).classList.remove('show'); }
+    function showModal(id) { var el = document.getElementById(id); if (el) el.classList.add('show'); else console.error('modal missing', id); }
+    function hideModal(id) { var el = document.getElementById(id); if (el) el.classList.remove('show'); }
 
     function openCreateModal() {
       document.getElementById('createTitle').value = '';
