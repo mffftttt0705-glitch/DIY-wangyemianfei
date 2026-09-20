@@ -3,357 +3,514 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>自主 DIY 网页平台 · 组件化搭建</title>
+  <title>DIY 电商网页搭建平台</title>
   <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #16a34a;
+      --danger: #dc2626;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+    }
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      transition: background .15s, opacity .15s;
+    }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    input, select, textarea { font-family: inherit; }
+
+    #homeView {
       height: 100vh;
       display: flex;
       flex-direction: column;
-      background: #0f172a;
-      color: #e2e8f0;
-      overflow: hidden;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      background: radial-gradient(ellipse at top, #1e293b 0%, #0f172a 70%);
     }
-    header {
-      background: #1e293b;
-      padding: 10px 16px;
+    #homeView h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+    #homeView .sub { color: var(--muted); font-size: 15px; margin-top: -16px; }
+    .home-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .btn-home {
+      padding: 16px 36px;
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: var(--panel); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #334155; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+
+    #editorView { display: none; height: 100vh; flex-direction: column; }
+    #editorView.show { display: flex; }
+
+    .topbar {
+      height: 52px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #334155;
-      gap: 10px;
-      flex-wrap: wrap;
+      padding: 0 16px;
       flex-shrink: 0;
+      gap: 12px;
     }
-    header h1 { font-size: 17px; font-weight: 600; white-space: nowrap; }
-    .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    button, .btn {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 7px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 13px;
-      transition: background 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    button:hover, .btn:hover { background: #2563eb; }
-    button.secondary { background: #475569; }
-    button.secondary:hover { background: #64748b; }
-    button.success { background: #16a34a; }
-    button.success:hover { background: #15803d; }
-    button.danger { background: #dc2626; }
-    button.danger:hover { background: #b91c1c; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    .status { font-size: 12px; color: #64748b; }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-left h2 { font-size: 15px; font-weight: 600; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .topbar-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .topbar button { padding: 7px 14px; }
+    .status-text { font-size: 12px; color: var(--muted); }
 
-    .main { flex: 1; display: flex; overflow: hidden; }
+    .editor-body { flex: 1; display: flex; overflow: hidden; }
 
-    /* 左侧组件库 */
-    .component-panel {
-      width: 280px;
-      background: #1e293b;
-      border-right: 1px solid #334155;
+    .palette {
+      width: 260px;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      overflow: hidden;
       flex-shrink: 0;
     }
-    .panel-tabs {
-      display: flex;
-      border-bottom: 1px solid #334155;
-      flex-shrink: 0;
-    }
-    .panel-tab {
+    .palette-tabs { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--border); }
+    .palette-tab {
       flex: 1;
+      min-width: 50%;
       padding: 10px 4px;
       text-align: center;
       font-size: 12px;
+      color: var(--muted);
       cursor: pointer;
-      color: #94a3b8;
       border-bottom: 2px solid transparent;
-      transition: all 0.15s;
+      background: transparent;
+      border-radius: 0;
     }
-    .panel-tab:hover { color: #e2e8f0; background: #334155; }
-    .panel-tab.active { color: #60a5fa; border-bottom-color: #3b82f6; }
-    .component-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 10px;
-    }
-    .comp-category { margin-bottom: 16px; }
-    .comp-category-title {
-      font-size: 11px;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .palette-tab:hover { color: var(--text); background: #334155; }
+    .palette-tab.active { color: #60a5fa; border-bottom-color: var(--primary); }
+    .palette-list { flex: 1; overflow-y: auto; padding: 12px; }
+    .palette-hint { font-size: 11px; color: var(--muted); margin-bottom: 10px; line-height: 1.4; }
+    .comp-card {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
       margin-bottom: 8px;
-      padding-left: 4px;
+      cursor: grab;
+      transition: border-color .15s, transform .1s;
+      user-select: none;
     }
-    .comp-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-    }
-    .comp-item {
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      padding: 10px 4px;
+    .comp-card:hover { border-color: var(--primary); }
+    .comp-card:active { cursor: grabbing; transform: scale(0.98); }
+    .comp-card .comp-preview {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 4px;
-      cursor: pointer;
-      transition: all 0.15s;
-      color: #94a3b8;
-    }
-    .comp-item:hover {
-      border-color: #3b82f6;
-      color: #e2e8f0;
-      background: #1e293b;
-    }
-    .comp-item svg { width: 22px; height: 22px; }
-    .comp-item span { font-size: 10px; text-align: center; line-height: 1.2; }
-    .comp-block {
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      padding: 10px 12px;
+      justify-content: center;
+      min-height: 36px;
       margin-bottom: 6px;
-      cursor: pointer;
-      transition: all 0.15s;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .comp-block:hover {
-      border-color: #3b82f6;
-      background: #1e293b;
-    }
-    .comp-block svg { width: 18px; height: 18px; flex-shrink: 0; color: #60a5fa; }
-
-    /* 中间编辑区 */
-    .editor-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .editor-toolbar {
-      background: #1e293b;
-      padding: 6px 12px;
-      border-bottom: 1px solid #334155;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-shrink: 0;
-    }
-    .editor-toolbar input {
-      background: #0f172a;
-      border: 1px solid #334155;
-      color: #e2e8f0;
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-size: 13px;
-      outline: none;
-      width: 180px;
-    }
-    .editor-toolbar input:focus { border-color: #3b82f6; }
-    .split-view { flex: 1; display: flex; overflow: hidden; }
-    .code-panel, .preview-panel {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .code-panel { border-right: 1px solid #334155; }
-    .panel-header {
-      background: #1e293b;
-      padding: 6px 12px;
-      font-size: 12px;
       color: #94a3b8;
-      border-bottom: 1px solid #334155;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
+      overflow: hidden;
     }
-    textarea#code {
-      flex: 1;
-      background: #0f172a;
-      color: #e2e8f0;
-      border: none;
-      padding: 14px;
-      font-family: "SF Mono", "Fira Code", Consolas, monospace;
-      font-size: 13px;
-      line-height: 1.5;
-      resize: none;
-      outline: none;
-    }
-    iframe#preview {
-      flex: 1;
-      width: 100%;
-      border: none;
-      background: #fff;
-    }
+    .comp-card .comp-preview svg { width: 24px; height: 24px; }
+    .comp-card .comp-name { font-size: 12px; text-align: center; color: var(--muted); }
 
-    /* 右侧项目列表 */
-    .project-panel {
-      width: 220px;
-      background: #1e293b;
-      border-left: 1px solid #334155;
+    .canvas-wrap {
+      flex: 1;
       display: flex;
       flex-direction: column;
+      background: #0b1220;
       overflow: hidden;
+    }
+    .canvas-toolbar {
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
       flex-shrink: 0;
     }
-    .project-list { flex: 1; overflow-y: auto; padding: 8px; }
-    .project-item {
-      padding: 10px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-bottom: 4px;
-      transition: background 0.15s;
+    .canvas-toolbar span { font-size: 12px; color: var(--muted); }
+    .canvas-scroll {
+      flex: 1;
+      overflow: auto;
+      padding: 24px;
+      display: flex;
+      justify-content: center;
     }
-    .project-item:hover { background: #334155; }
-    .project-item.active { background: #3b82f6; }
-    .project-item .title { font-size: 13px; font-weight: 500; }
-    .project-item .meta { font-size: 11px; color: #94a3b8; margin-top: 2px; }
-    .project-item.active .meta { color: #bfdbfe; }
+    .canvas {
+      width: 100%;
+      max-width: 420px;
+      min-height: 700px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.35);
+      overflow: hidden;
+      position: relative;
+    }
+    .canvas.phone { max-width: 390px; min-height: 780px; }
+    .canvas.empty-hint {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      color: #94a3b8;
+      font-size: 14px;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .canvas-drop-zone {
+      min-height: 60px;
+      border: 2px dashed transparent;
+      transition: border-color .15s, background .15s;
+    }
+    .canvas-drop-zone.drag-over {
+      border-color: var(--primary);
+      background: rgba(59,130,246,.08);
+    }
 
-    /* 弹窗 */
+    .canvas-el {
+      position: relative;
+      outline: 2px solid transparent;
+      outline-offset: -2px;
+      transition: outline-color .1s;
+      cursor: pointer;
+    }
+    .canvas-el:hover { outline-color: rgba(59,130,246,.4); }
+    .canvas-el.selected { outline-color: var(--primary); }
+    .canvas-el .el-actions {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      display: none;
+      gap: 4px;
+      z-index: 10;
+    }
+    .canvas-el.selected .el-actions { display: flex; }
+    .el-actions button {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: #1e293b;
+      color: #fff;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .el-actions button:hover { background: #334155; }
+    .el-actions .btn-del:hover { background: var(--danger); }
+
+    .props-panel {
+      width: 280px;
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .props-header {
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .props-body { flex: 1; overflow-y: auto; padding: 16px; }
+    .prop-group { margin-bottom: 16px; }
+    .prop-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .prop-group input[type="text"],
+    .prop-group input[type="number"],
+    .prop-group select,
+    .prop-group textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    .prop-group input:focus, .prop-group select:focus { border-color: var(--primary); }
+    .color-row { display: flex; gap: 8px; align-items: center; }
+    .color-row input[type="color"] {
+      width: 40px;
+      height: 36px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: transparent;
+      padding: 0;
+    }
+    .color-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .color-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+    .color-swatch:hover { border-color: #fff; }
+    .props-empty {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      padding: 40px 16px;
+      line-height: 1.6;
+    }
+
     .modal-mask {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.65);
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.65);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 1000;
+      padding: 16px;
     }
     .modal-mask.show { display: flex; }
     .modal {
-      background: #1e293b;
-      border-radius: 12px;
-      padding: 24px;
-      width: 400px;
-      max-width: 92vw;
-      border: 1px solid #334155;
-      max-height: 85vh;
-      overflow-y: auto;
+      background: var(--panel);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border);
+      overflow: hidden;
     }
-    .modal h2 { font-size: 18px; margin-bottom: 16px; }
+    .modal-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-header h3 { font-size: 17px; }
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 18px;
+    }
+    .modal-close:hover { background: #334155; color: #fff; }
+    .modal-body { flex: 1; overflow-y: auto; padding: 12px; }
+    .modal-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .project-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .project-item:hover { background: #334155; }
+    .project-item .info { flex: 1; min-width: 0; }
+    .project-item .title { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .project-item .meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .project-item .del-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .project-item .del-btn:hover { background: var(--danger); color: #fff; }
+    .empty-projects {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #16a34a;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      z-index: 2000;
+      opacity: 0;
+      transition: all .25s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
     .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 6px; }
+    .form-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
     .form-group input {
       width: 100%;
-      padding: 9px 12px;
-      border-radius: 6px;
-      border: 1px solid #475569;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
       background: #0f172a;
-      color: #e2e8f0;
+      color: var(--text);
       font-size: 14px;
       outline: none;
     }
-    .form-group input:focus { border-color: #3b82f6; }
-    .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
-    .modal-actions button { flex: 1; }
-    .error-msg { color: #f87171; font-size: 13px; margin-top: 6px; }
-    .hint { font-size: 12px; color: #64748b; margin-top: 8px; }
-
-    /* 插入提示 */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #16a34a;
-      color: white;
-      padding: 10px 20px;
+    .form-group input:focus { border-color: var(--primary); }
+    .url-preview {
+      background: #0f172a;
+      padding: 10px 12px;
       border-radius: 8px;
-      font-size: 13px;
-      z-index: 2000;
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
+      font-family: monospace;
+      font-size: 12px;
+      word-break: break-all;
+      border: 1px solid var(--border);
+      margin-top: 8px;
     }
-    .toast.show { opacity: 1; }
+    .error-text { color: #f87171; font-size: 13px; margin-top: 8px; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>自主 DIY 网页平台</h1>
-    <div class="toolbar">
-      <span class="status" id="status">就绪 · 无需登录</span>
-      <button class="success" onclick="createNewProject()">+ 新建项目</button>
-      <button onclick="saveCurrentProject()">保存项目</button>
-      <button class="secondary" onclick="showPublishModal()">发布</button>
-      <button onclick="exportHTML()">导出代码</button>
-      <button class="secondary" onclick="loadExample()">加载示例</button>
-      <button class="danger secondary" onclick="clearCode()">清空</button>
-    </div>
-  </header>
 
-  <div class="main">
-    <!-- 左侧：组件库 -->
-    <div class="component-panel">
-      <div class="panel-tabs">
-        <div class="panel-tab active" data-tab="icons" onclick="switchTab('icons')">图标</div>
-        <div class="panel-tab" data-tab="nav" onclick="switchTab('nav')">导航</div>
-        <div class="panel-tab" data-tab="btn" onclick="switchTab('btn')">按钮</div>
-        <div class="panel-tab" data-tab="modal" onclick="switchTab('modal')">弹窗</div>
-        <div class="panel-tab" data-tab="ecom" onclick="switchTab('ecom')">电商</div>
+  <div id="homeView">
+    <h1>DIY 电商网页搭建平台</h1>
+    <p class="sub">拖拽组件 · 自选颜色 · 快速做出电商页面模型</p>
+    <div class="home-actions">
+      <button class="btn-home btn-primary" onclick="createNewProject()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        新建项目
+      </button>
+      <button class="btn-home btn-secondary" onclick="showProjectsModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        我的项目
+      </button>
+    </div>
+  </div>
+
+  <div id="editorView">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="btn-secondary" style="padding:6px 12px;" onclick="backToHome()">← 返回</button>
+        <h2 id="editorTitle">未命名项目</h2>
       </div>
-      <div class="component-list" id="componentList"></div>
+      <div class="topbar-right">
+        <span class="status-text" id="saveStatus">未保存</span>
+        <button class="btn-secondary" onclick="showProjectsModal()">项目</button>
+        <button class="btn-secondary" onclick="previewPage()">预览</button>
+        <button class="btn-primary" onclick="saveProject()">保存</button>
+        <button class="btn-success" onclick="exportHTML()">导出代码</button>
+        <button class="btn-secondary" onclick="showPublishModal()">发布</button>
+      </div>
     </div>
 
-    <!-- 中间：编辑 + 预览 -->
-    <div class="editor-area">
-      <div class="editor-toolbar">
-        <input type="text" id="projectTitle" placeholder="项目标题" value="我的新网页">
-        <span style="font-size:12px;color:#64748b;" id="currentProjectHint">当前：未保存的新项目</span>
+    <div class="editor-body">
+      <div class="palette">
+        <div class="palette-tabs" id="paletteTabs"></div>
+        <div class="palette-list" id="paletteList"></div>
       </div>
-      <div class="split-view">
-        <div class="code-panel">
-          <div class="panel-header">
-            <span>HTML 代码（点击左侧组件可插入）</span>
-            <span style="font-size:11px;">Ctrl+S 保存</span>
+
+      <div class="canvas-wrap">
+        <div class="canvas-toolbar">
+          <span>画布 · 从左侧拖入组件</span>
+          <button class="btn-secondary" style="padding:4px 10px;font-size:12px;" onclick="togglePhoneMode()">手机预览</button>
+          <button class="btn-secondary" style="padding:4px 10px;font-size:12px;" onclick="clearCanvas()">清空</button>
+        </div>
+        <div class="canvas-scroll">
+          <div class="canvas phone" id="canvas">
+            <div class="canvas-drop-zone" id="dropZone"></div>
           </div>
-          <textarea id="code" spellcheck="false" placeholder="在这里写代码，或点击左侧组件快速插入..."></textarea>
-        </div>
-        <div class="preview-panel">
-          <div class="panel-header">实时预览</div>
-          <iframe id="preview"></iframe>
         </div>
       </div>
-    </div>
 
-    <!-- 右侧：项目列表 -->
-    <div class="project-panel">
-      <div class="panel-header" style="justify-content:space-between;">
-        <span>我的项目</span>
-        <button style="padding:3px 8px;font-size:11px;" onclick="createNewProject()">新建</button>
-      </div>
-      <div class="project-list" id="projectList">
-        <div style="padding:16px;color:#64748b;font-size:12px;text-align:center;">暂无项目</div>
+      <div class="props-panel">
+        <div class="props-header">属性设置</div>
+        <div class="props-body" id="propsBody">
+          <div class="props-empty">选中画布中的组件<br>即可修改颜色、文字等</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 发布弹窗 -->
+  <div class="modal-mask" id="projectsModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>我的项目</h3>
+        <button class="modal-close" onclick="hideProjectsModal()">×</button>
+      </div>
+      <div class="modal-body" id="projectsList"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="hideProjectsModal()">关闭</button>
+        <button class="btn-primary" onclick="hideProjectsModal(); createNewProject();">新建项目</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-mask" id="publishModal">
     <div class="modal">
-      <h2>发布网页</h2>
-      <p class="hint">设置一个简短的访问地址（slug），发布后可通过 /p/你的slug 访问</p>
-      <div class="form-group">
-        <label>访问地址 slug</label>
-        <input type="text" id="publishSlug" placeholder="例如：my-shop">
+      <div class="modal-header">
+        <h3>发布网页</h3>
+        <button class="modal-close" onclick="hidePublishModal()">×</button>
       </div>
-      <div id="previewPublishUrl" style="background:#0f172a;padding:10px;border-radius:6px;font-family:monospace;font-size:12px;word-break:break-all;border:1px solid #334155;"></div>
-      <div class="error-msg" id="publishError"></div>
-      <div class="modal-actions">
-        <button class="secondary" onclick="hidePublishModal()">取消</button>
-        <button class="success" onclick="doPublish()">确认发布</button>
+      <div class="modal-body" style="padding:20px;">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">设置访问地址后，别人可通过链接直接打开你的页面</p>
+        <div class="form-group">
+          <label>访问地址（slug）</label>
+          <input type="text" id="publishSlug" placeholder="例如：my-shop">
+          <div class="url-preview" id="publishUrlPreview">/p/xxx</div>
+        </div>
+        <div class="error-text" id="publishError"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="hidePublishModal()">取消</button>
+        <button class="btn-success" onclick="doPublish()">确认发布</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="previewModal">
+    <div class="modal" style="max-width:420px;height:85vh;">
+      <div class="modal-header">
+        <h3>页面预览</h3>
+        <button class="modal-close" onclick="hidePreviewModal()">×</button>
+      </div>
+      <div class="modal-body" style="padding:0;background:#fff;">
+        <iframe id="previewFrame" style="width:100%;height:100%;border:none;min-height:60vh;"></iframe>
       </div>
     </div>
   </div>
@@ -361,699 +518,516 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    // ==================== 组件库定义（完整可导出源码） ====================
-    const COMPONENTS = {
-      // ---------- 纯色图标（SVG，使用 currentColor，可任意改色） ----------
-      icons: [
-        {
-          name: '购物车',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`
-        },
-        {
-          name: '收藏心',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`
-        },
-        {
-          name: '搜索',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`
-        },
-        {
-          name: '用户',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`
-        },
-        {
-          name: '首页',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`
-        },
-        {
-          name: '分类',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`
-        },
-        {
-          name: '订单',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`
-        },
-        {
-          name: '消息',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`
-        },
-        {
-          name: '设置',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`
-        },
-        {
-          name: '返回',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>`
-        },
-        {
-          name: '关闭',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
-        },
-        {
-          name: '加号',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`
-        },
-        {
-          name: '减号',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>`
-        },
-        {
-          name: '星星',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
-        },
-        {
-          name: '位置',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`
-        },
-        {
-          name: '电话',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`
-        },
-        {
-          name: '分享',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`
-        },
-        {
-          name: '删除',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`
-        },
-        {
-          name: '编辑',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`
-        },
-        {
-          name: '成功',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`
-        },
-        {
-          name: '警告',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
-        },
-        {
-          name: '邮件',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`
-        },
-        {
-          name: '相机',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`
-        },
-        {
-          name: '优惠券',
-          code: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`
-        }
-      ],
-
-      // ---------- 导航栏 ----------
-      nav: [
-        {
-          name: '顶部导航栏（电商）',
-          code: `<!-- 顶部导航栏 -->
-<nav style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#fff;border-bottom:1px solid #e5e7eb;font-family:system-ui,sans-serif;">
-  <div style="display:flex;align-items:center;gap:24px;">
-    <a href="#" style="font-size:20px;font-weight:700;color:#111;text-decoration:none;">Logo</a>
-    <div style="display:flex;gap:20px;">
-      <a href="#" style="color:#374151;text-decoration:none;font-size:14px;">首页</a>
-      <a href="#" style="color:#374151;text-decoration:none;font-size:14px;">分类</a>
-      <a href="#" style="color:#374151;text-decoration:none;font-size:14px;">新品</a>
-      <a href="#" style="color:#374151;text-decoration:none;font-size:14px;">优惠</a>
-    </div>
-  </div>
-  <div style="display:flex;align-items:center;gap:16px;">
-    <div style="display:flex;align-items:center;background:#f3f4f6;border-radius:20px;padding:6px 14px;gap:8px;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" placeholder="搜索商品" style="border:none;background:transparent;outline:none;font-size:13px;width:140px;">
-    </div>
-    <a href="#" style="color:#374151;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
-    <a href="#" style="color:#374151;position:relative;">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-      <span style="position:absolute;top:-6px;right:-8px;background:#ef4444;color:#fff;font-size:10px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;">3</span>
-    </a>
-  </div>
-</nav>`
-        },
-        {
-          name: '底部 Tab 导航',
-          code: `<!-- 底部 Tab 导航（固定底部） -->
-<nav style="position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #e5e7eb;padding:8px 0;font-family:system-ui,sans-serif;z-index:100;">
-  <a href="#" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:#3b82f6;font-size:11px;">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    首页
-  </a>
-  <a href="#" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:#9ca3af;font-size:11px;">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-    分类
-  </a>
-  <a href="#" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:#9ca3af;font-size:11px;">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-    购物车
-  </a>
-  <a href="#" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:#9ca3af;font-size:11px;">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    我的
-  </a>
-</nav>`
-        },
-        {
-          name: '简洁顶栏',
-          code: `<!-- 简洁顶栏 -->
-<header style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:#111827;color:#fff;font-family:system-ui,sans-serif;">
-  <div style="display:flex;align-items:center;gap:12px;">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-    <span style="font-size:16px;font-weight:600;">页面标题</span>
-  </div>
-  <div style="display:flex;gap:16px;">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-  </div>
-</header>`
-        }
-      ],
-
-      // ---------- 按钮 ----------
-      btn: [
-        {
-          name: '主按钮',
-          code: `<button style="background:#3b82f6;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;">主按钮</button>`
-        },
-        {
-          name: '次按钮',
-          code: `<button style="background:#fff;color:#374151;border:1px solid #d1d5db;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;">次按钮</button>`
-        },
-        {
-          name: '危险按钮',
-          code: `<button style="background:#ef4444;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;">删除</button>`
-        },
-        {
-          name: '加入购物车',
-          code: `<button style="display:inline-flex;align-items:center;gap:8px;background:#f59e0b;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-  加入购物车
-</button>`
-        },
-        {
-          name: '立即购买',
-          code: `<button style="background:#ef4444;color:#fff;border:none;padding:12px 32px;border-radius:24px;font-size:15px;font-weight:600;cursor:pointer;">立即购买</button>`
-        },
-        {
-          name: '收藏按钮',
-          code: `<button style="display:inline-flex;align-items:center;gap:6px;background:#fff;color:#ef4444;border:1px solid #fecaca;padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-  收藏
-</button>`
-        },
-        {
-          name: '图标圆形按钮',
-          code: `<button style="width:40px;height:40px;border-radius:50%;background:#3b82f6;color:#fff;border:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-</button>`
-        },
-        {
-          name: '胶囊标签',
-          code: `<span style="display:inline-block;background:#dbeafe;color:#1d4ed8;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;">热卖</span>
-<span style="display:inline-block;background:#fef3c7;color:#b45309;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;margin-left:6px;">新品</span>
-<span style="display:inline-block;background:#fee2e2;color:#b91c1c;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;margin-left:6px;">限时</span>`
-        }
-      ],
-
-      // ---------- 弹窗 ----------
-      modal: [
-        {
-          name: '确认弹窗',
-          code: `<!-- 确认弹窗 -->
-<div style="position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000;font-family:system-ui,sans-serif;">
-  <div style="background:#fff;border-radius:12px;padding:24px;width:320px;max-width:90vw;box-shadow:0 20px 40px rgba(0,0,0,0.15);">
-    <h3 style="margin:0 0 8px;font-size:18px;color:#111;">确认操作</h3>
-    <p style="margin:0 0 20px;font-size:14px;color:#6b7280;line-height:1.5;">确定要执行此操作吗？此操作无法撤销。</p>
-    <div style="display:flex;gap:10px;justify-content:flex-end;">
-      <button style="padding:8px 16px;border-radius:6px;border:1px solid #d1d5db;background:#fff;color:#374151;font-size:14px;cursor:pointer;">取消</button>
-      <button style="padding:8px 16px;border-radius:6px;border:none;background:#ef4444;color:#fff;font-size:14px;cursor:pointer;">确认</button>
-    </div>
-  </div>
-</div>`
-        },
-        {
-          name: '成功提示弹窗',
-          code: `<!-- 成功提示弹窗 -->
-<div style="position:fixed;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:1000;font-family:system-ui,sans-serif;">
-  <div style="background:#fff;border-radius:16px;padding:32px 24px;width:280px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,0.12);">
-    <div style="width:56px;height:56px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-    </div>
-    <h3 style="margin:0 0 6px;font-size:17px;color:#111;">操作成功</h3>
-    <p style="margin:0 0 20px;font-size:13px;color:#6b7280;">您的操作已成功完成</p>
-    <button style="width:100%;padding:10px;border-radius:8px;border:none;background:#16a34a;color:#fff;font-size:14px;cursor:pointer;">知道了</button>
-  </div>
-</div>`
-        },
-        {
-          name: '底部操作菜单',
-          code: `<!-- 底部操作菜单（Action Sheet） -->
-<div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:flex-end;justify-content:center;z-index:1000;font-family:system-ui,sans-serif;">
-  <div style="background:#f3f4f6;border-radius:16px 16px 0 0;width:100%;max-width:400px;padding:8px;padding-bottom:24px;">
-    <div style="background:#fff;border-radius:12px;overflow:hidden;margin-bottom:8px;">
-      <button style="width:100%;padding:16px;border:none;background:#fff;color:#111;font-size:16px;border-bottom:1px solid #f3f4f6;cursor:pointer;">分享给好友</button>
-      <button style="width:100%;padding:16px;border:none;background:#fff;color:#111;font-size:16px;border-bottom:1px solid #f3f4f6;cursor:pointer;">生成海报</button>
-      <button style="width:100%;padding:16px;border:none;background:#fff;color:#ef4444;font-size:16px;cursor:pointer;">删除</button>
-    </div>
-    <button style="width:100%;padding:16px;border:none;background:#fff;color:#111;font-size:16px;border-radius:12px;cursor:pointer;font-weight:500;">取消</button>
-  </div>
-</div>`
-        },
-        {
-          name: '加载中弹窗',
-          code: `<!-- 加载中 -->
-<div style="position:fixed;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;z-index:1000;font-family:system-ui,sans-serif;">
-  <div style="background:#fff;border-radius:12px;padding:24px 32px;display:flex;flex-direction:column;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,0.1);">
-    <div style="width:32px;height:32px;border:3px solid #e5e7eb;border-top-color:#3b82f6;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-    <span style="font-size:14px;color:#6b7280;">加载中...</span>
-  </div>
-</div>
-<style>@keyframes spin{to{transform:rotate(360deg)}}</style>`
-        }
-      ],
-
-      // ---------- 电商组件 ----------
-      ecom: [
-        {
-          name: '商品卡片',
-          code: `<!-- 商品卡片 -->
-<div style="width:160px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);font-family:system-ui,sans-serif;">
-  <div style="width:100%;height:160px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:13px;">商品图片</div>
-  <div style="padding:10px 12px 14px;">
-    <div style="font-size:13px;color:#111;line-height:1.4;height:36px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">商品名称商品名称商品名称</div>
-    <div style="display:flex;align-items:baseline;gap:4px;margin-top:8px;">
-      <span style="color:#ef4444;font-size:16px;font-weight:700;">¥99</span>
-      <span style="color:#9ca3af;font-size:12px;text-decoration:line-through;">¥199</span>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-      <span style="font-size:11px;color:#9ca3af;">已售 1.2万</span>
-      <button style="width:28px;height:28px;border-radius:50%;background:#3b82f6;color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
-    </div>
-  </div>
-</div>`
-        },
-        {
-          name: '商品列表项',
-          code: `<!-- 商品列表项（横向） -->
-<div style="display:flex;gap:12px;padding:12px;background:#fff;border-radius:10px;font-family:system-ui,sans-serif;">
-  <div style="width:90px;height:90px;background:#f3f4f6;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px;">图片</div>
-  <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;">
-    <div>
-      <div style="font-size:14px;color:#111;line-height:1.4;">商品名称商品名称两行显示</div>
-      <div style="font-size:12px;color:#9ca3af;margin-top:4px;">已售 3280 · 好评 98%</div>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <span style="color:#ef4444;font-size:18px;font-weight:700;">¥129<span style="font-size:12px;">.00</span></span>
-      <button style="background:#ef4444;color:#fff;border:none;padding:6px 14px;border-radius:16px;font-size:12px;cursor:pointer;">马上抢</button>
-    </div>
-  </div>
-</div>`
-        },
-        {
-          name: '价格标签',
-          code: `<div style="display:inline-flex;align-items:baseline;gap:2px;font-family:system-ui,sans-serif;">
-  <span style="color:#ef4444;font-size:12px;font-weight:600;">¥</span>
-  <span style="color:#ef4444;font-size:22px;font-weight:700;">299</span>
-  <span style="color:#ef4444;font-size:14px;font-weight:600;">.00</span>
-  <span style="color:#9ca3af;font-size:13px;text-decoration:line-through;margin-left:6px;">¥599</span>
-</div>`
-        },
-        {
-          name: '数量选择器',
-          code: `<!-- 数量选择器 -->
-<div style="display:inline-flex;align-items:center;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;font-family:system-ui,sans-serif;">
-  <button style="width:32px;height:32px;border:none;background:#f9fafb;color:#374151;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>
-  <span style="width:40px;text-align:center;font-size:14px;color:#111;">1</span>
-  <button style="width:32px;height:32px;border:none;background:#f9fafb;color:#374151;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
-</div>`
-        },
-        {
-          name: '搜索框',
-          code: `<!-- 搜索框 -->
-<div style="display:flex;align-items:center;background:#f3f4f6;border-radius:24px;padding:10px 16px;gap:10px;font-family:system-ui,sans-serif;">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  <input type="text" placeholder="搜索你想要的商品" style="flex:1;border:none;background:transparent;outline:none;font-size:14px;color:#111;">
-</div>`
-        },
-        {
-          name: 'Banner 横幅',
-          code: `<!-- Banner 横幅 -->
-<div style="width:100%;height:140px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:system-ui,sans-serif;position:relative;overflow:hidden;">
-  <div style="text-align:center;z-index:1;">
-    <div style="font-size:22px;font-weight:700;margin-bottom:6px;">限时特惠</div>
-    <div style="font-size:13px;opacity:0.9;">全场低至 5 折起</div>
-  </div>
-</div>`
-        },
-        {
-          name: '评分星星',
-          code: `<!-- 评分 -->
-<div style="display:inline-flex;align-items:center;gap:2px;font-family:system-ui,sans-serif;">
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-  <span style="font-size:12px;color:#6b7280;margin-left:4px;">4.0</span>
-</div>`
-        },
-        {
-          name: '空状态',
-          code: `<!-- 空状态 -->
-<div style="display:flex;flex-direction:column;align-items:center;padding:48px 20px;font-family:system-ui,sans-serif;">
-  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-  <p style="margin:16px 0 8px;font-size:15px;color:#6b7280;">购物车是空的</p>
-  <p style="margin:0 0 20px;font-size:13px;color:#9ca3af;">快去挑选心仪的商品吧</p>
-  <button style="background:#3b82f6;color:#fff;border:none;padding:10px 28px;border-radius:20px;font-size:14px;cursor:pointer;">去逛逛</button>
-</div>`
-        }
-      ]
+    const ICONS = {
+      cart: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>',
+      heart: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+      search: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+      user: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+      home: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+      grid: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
+      star: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+      plus: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
     };
 
-    // ==================== 状态 ====================
-    const codeEl = document.getElementById('code');
-    const preview = document.getElementById('preview');
-    const statusEl = document.getElementById('status');
-    const projectListEl = document.getElementById('projectList');
-    const projectTitleEl = document.getElementById('projectTitle');
-    const currentProjectHint = document.getElementById('currentProjectHint');
-
-    let currentProjectId = null;
-    let currentTab = 'icons';
-    const STORAGE_KEY = 'diy-projects-v2';
-    const CLIENT_ID = localStorage.getItem('diy-client-id') || (() => {
-      const id = 'c_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-      localStorage.setItem('diy-client-id', id);
-      return id;
-    })();
-
-    // ==================== 组件库渲染 ====================
-    function switchTab(tab) {
-      currentTab = tab;
-      document.querySelectorAll('.panel-tab').forEach(t => {
-        t.classList.toggle('active', t.dataset.tab === tab);
-      });
-      renderComponents();
+    function iconSized(svg, size) {
+      return svg.replace(/width="24"/g, 'width="'+size+'"').replace(/height="24"/g, 'height="'+size+'"');
     }
 
-    function renderComponents() {
-      const list = document.getElementById('componentList');
-      const items = COMPONENTS[currentTab] || [];
+    const COMPONENT_DEFS = [
+      { type: 'icon-cart', name: '购物车图标', category: 'icons',
+        defaults: { color: '#374151', size: 24 },
+        render: function(p) { return '<span style="display:inline-flex;color:'+p.color+';padding:8px;">'+iconSized(ICONS.cart,p.size)+'</span>'; } },
+      { type: 'icon-heart', name: '收藏心形', category: 'icons',
+        defaults: { color: '#ef4444', size: 24 },
+        render: function(p) { return '<span style="display:inline-flex;color:'+p.color+';padding:8px;">'+iconSized(ICONS.heart,p.size)+'</span>'; } },
+      { type: 'icon-search', name: '搜索图标', category: 'icons',
+        defaults: { color: '#6b7280', size: 24 },
+        render: function(p) { return '<span style="display:inline-flex;color:'+p.color+';padding:8px;">'+iconSized(ICONS.search,p.size)+'</span>'; } },
+      { type: 'icon-user', name: '用户图标', category: 'icons',
+        defaults: { color: '#374151', size: 24 },
+        render: function(p) { return '<span style="display:inline-flex;color:'+p.color+';padding:8px;">'+iconSized(ICONS.user,p.size)+'</span>'; } },
+      { type: 'icon-star', name: '星星图标', category: 'icons',
+        defaults: { color: '#f59e0b', size: 24 },
+        render: function(p) { return '<span style="display:inline-flex;color:'+p.color+';padding:8px;">'+iconSized(ICONS.star,p.size)+'</span>'; } },
 
-      if (currentTab === 'icons') {
-        list.innerHTML = `
-          <div class="comp-category">
-            <div class="comp-category-title">纯色图标（点击插入 SVG）</div>
-            <div class="comp-grid">
-              ${items.map((item, i) => `
-                <div class="comp-item" onclick="insertComponent('icons', ${i})" title="${item.name}">
-                  ${item.code}
-                  <span>${item.name}</span>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-          <p style="font-size:11px;color:#64748b;padding:8px 4px;line-height:1.5;">
-            提示：图标使用 currentColor，插入后可通过 CSS color 改变颜色。例如外层加 style="color:#ef4444"
-          </p>
-        `;
-      } else {
-        const titles = { nav: '导航栏组件', btn: '按钮 & 标签', modal: '弹窗组件', ecom: '电商常用组件' };
-        list.innerHTML = `
-          <div class="comp-category">
-            <div class="comp-category-title">${titles[currentTab] || ''}</div>
-            ${items.map((item, i) => `
-              <div class="comp-block" onclick="insertComponent('${currentTab}', ${i})">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                ${item.name}
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
+      { type: 'nav-top', name: '顶部导航栏', category: 'nav',
+        defaults: { bgColor: '#ffffff', textColor: '#111827', logoText: 'Shop', menu1: '首页', menu2: '分类' },
+        render: function(p) {
+          return '<nav style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:'+p.bgColor+';border-bottom:1px solid #e5e7eb;font-family:system-ui,sans-serif;">'+
+            '<div style="display:flex;align-items:center;gap:16px;">'+
+              '<span style="font-size:18px;font-weight:700;color:'+p.textColor+';">'+esc(p.logoText)+'</span>'+
+              '<a href="#" style="color:'+p.textColor+';text-decoration:none;font-size:14px;opacity:.8;">'+esc(p.menu1)+'</a>'+
+              '<a href="#" style="color:'+p.textColor+';text-decoration:none;font-size:14px;opacity:.8;">'+esc(p.menu2)+'</a>'+
+            '</div>'+
+            '<div style="display:flex;align-items:center;gap:14px;color:'+p.textColor+';">'+
+              iconSized(ICONS.search,20)+iconSized(ICONS.user,20)+
+              '<span style="position:relative;display:inline-flex;">'+iconSized(ICONS.cart,20)+
+                '<span style="position:absolute;top:-6px;right:-8px;background:#ef4444;color:#fff;font-size:10px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;">2</span></span>'+
+            '</div></nav>';
+        }},
+      { type: 'nav-bottom', name: '底部Tab导航', category: 'nav',
+        defaults: { bgColor: '#ffffff', activeColor: '#3b82f6', inactiveColor: '#9ca3af' },
+        render: function(p) {
+          return '<nav style="display:flex;background:'+p.bgColor+';border-top:1px solid #e5e7eb;padding:8px 0;font-family:system-ui,sans-serif;">'+
+            '<a href="#" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:'+p.activeColor+';font-size:11px;">'+iconSized(ICONS.home,22)+'首页</a>'+
+            '<a href="#" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:'+p.inactiveColor+';font-size:11px;">'+iconSized(ICONS.grid,22)+'分类</a>'+
+            '<a href="#" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:'+p.inactiveColor+';font-size:11px;">'+iconSized(ICONS.cart,22)+'购物车</a>'+
+            '<a href="#" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:'+p.inactiveColor+';font-size:11px;">'+iconSized(ICONS.user,22)+'我的</a></nav>';
+        }},
+
+      { type: 'btn-primary', name: '主按钮', category: 'btn',
+        defaults: { text: '立即购买', bgColor: '#ef4444', textColor: '#ffffff', radius: 24 },
+        render: function(p) {
+          return '<div style="padding:8px 16px;"><button style="width:100%;background:'+p.bgColor+';color:'+p.textColor+';border:none;padding:12px 24px;border-radius:'+p.radius+'px;font-size:15px;font-weight:600;cursor:pointer;font-family:system-ui,sans-serif;">'+esc(p.text)+'</button></div>';
+        }},
+      { type: 'btn-cart', name: '加入购物车', category: 'btn',
+        defaults: { text: '加入购物车', bgColor: '#f59e0b', textColor: '#ffffff', radius: 8 },
+        render: function(p) {
+          return '<div style="padding:8px 16px;"><button style="width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:'+p.bgColor+';color:'+p.textColor+';border:none;padding:12px 20px;border-radius:'+p.radius+'px;font-size:14px;font-weight:500;cursor:pointer;font-family:system-ui,sans-serif;">'+iconSized(ICONS.cart,18)+esc(p.text)+'</button></div>';
+        }},
+      { type: 'btn-outline', name: '描边按钮', category: 'btn',
+        defaults: { text: '查看详情', bgColor: '#ffffff', textColor: '#374151', borderColor: '#d1d5db', radius: 8 },
+        render: function(p) {
+          return '<div style="padding:8px 16px;"><button style="width:100%;background:'+p.bgColor+';color:'+p.textColor+';border:1px solid '+p.borderColor+';padding:10px 20px;border-radius:'+p.radius+'px;font-size:14px;cursor:pointer;font-family:system-ui,sans-serif;">'+esc(p.text)+'</button></div>';
+        }},
+
+      { type: 'banner', name: '促销横幅', category: 'ecom',
+        defaults: { title: '限时特惠', subtitle: '全场低至5折起', bgColor1: '#3b82f6', bgColor2: '#8b5cf6', textColor: '#ffffff' },
+        render: function(p) {
+          return '<div style="margin:12px 16px;height:120px;background:linear-gradient(135deg,'+p.bgColor1+','+p.bgColor2+');border-radius:12px;display:flex;align-items:center;justify-content:center;color:'+p.textColor+';font-family:system-ui,sans-serif;"><div style="text-align:center;"><div style="font-size:22px;font-weight:700;margin-bottom:4px;">'+esc(p.title)+'</div><div style="font-size:13px;opacity:.9;">'+esc(p.subtitle)+'</div></div></div>';
+        }},
+      { type: 'search-bar', name: '搜索框', category: 'ecom',
+        defaults: { placeholder: '搜索你想要的商品', bgColor: '#f3f4f6' },
+        render: function(p) {
+          return '<div style="padding:10px 16px;"><div style="display:flex;align-items:center;background:'+p.bgColor+';border-radius:24px;padding:10px 16px;gap:10px;font-family:system-ui,sans-serif;"><span style="color:#9ca3af;">'+iconSized(ICONS.search,18)+'</span><span style="flex:1;font-size:14px;color:#9ca3af;">'+esc(p.placeholder)+'</span></div></div>';
+        }},
+      { type: 'product-card', name: '商品卡片', category: 'ecom',
+        defaults: { name: '时尚运动鞋 透气舒适', price: '299', originPrice: '599', sales: '1.2万', bgColor: '#ffffff', priceColor: '#ef4444', btnColor: '#3b82f6' },
+        render: function(p) {
+          return '<div style="margin:8px 16px;background:'+p.bgColor+';border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);font-family:system-ui,sans-serif;">'+
+            '<div style="width:100%;height:160px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:13px;">商品图片</div>'+
+            '<div style="padding:12px;"><div style="font-size:14px;color:#111;line-height:1.4;height:40px;overflow:hidden;">'+esc(p.name)+'</div>'+
+            '<div style="display:flex;align-items:baseline;gap:6px;margin-top:8px;"><span style="color:'+p.priceColor+';font-size:18px;font-weight:700;">¥'+esc(p.price)+'</span><span style="color:#9ca3af;font-size:12px;text-decoration:line-through;">¥'+esc(p.originPrice)+'</span></div>'+
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;"><span style="font-size:12px;color:#9ca3af;">已售 '+esc(p.sales)+'</span>'+
+            '<button style="width:28px;height:28px;border-radius:50%;background:'+p.btnColor+';color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;">'+iconSized(ICONS.plus,14)+'</button></div></div></div>';
+        }},
+      { type: 'product-list', name: '商品列表项', category: 'ecom',
+        defaults: { name: '无线蓝牙耳机 降噪版', price: '129', sales: '3280', priceColor: '#ef4444', btnColor: '#ef4444', btnText: '马上抢' },
+        render: function(p) {
+          return '<div style="display:flex;gap:12px;padding:12px 16px;background:#fff;font-family:system-ui,sans-serif;">'+
+            '<div style="width:90px;height:90px;background:#f3f4f6;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px;">图片</div>'+
+            '<div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;"><div><div style="font-size:14px;color:#111;line-height:1.4;">'+esc(p.name)+'</div>'+
+            '<div style="font-size:12px;color:#9ca3af;margin-top:4px;">已售 '+esc(p.sales)+' · 好评 98%</div></div>'+
+            '<div style="display:flex;align-items:center;justify-content:space-between;"><span style="color:'+p.priceColor+';font-size:18px;font-weight:700;">¥'+esc(p.price)+'</span>'+
+            '<button style="background:'+p.btnColor+';color:#fff;border:none;padding:6px 14px;border-radius:16px;font-size:12px;cursor:pointer;">'+esc(p.btnText)+'</button></div></div></div>';
+        }},
+      { type: 'price-tag', name: '价格标签', category: 'ecom',
+        defaults: { price: '299.00', originPrice: '599', color: '#ef4444' },
+        render: function(p) {
+          return '<div style="padding:8px 16px;font-family:system-ui,sans-serif;"><span style="color:'+p.color+';font-size:12px;font-weight:600;">¥</span><span style="color:'+p.color+';font-size:24px;font-weight:700;">'+esc(p.price)+'</span><span style="color:#9ca3af;font-size:13px;text-decoration:line-through;margin-left:8px;">¥'+esc(p.originPrice)+'</span></div>';
+        }},
+      { type: 'qty-selector', name: '数量选择器', category: 'ecom',
+        defaults: { value: '1', borderColor: '#e5e7eb' },
+        render: function(p) {
+          return '<div style="padding:8px 16px;font-family:system-ui,sans-serif;"><div style="display:inline-flex;align-items:center;border:1px solid '+p.borderColor+';border-radius:6px;overflow:hidden;"><button style="width:36px;height:36px;border:none;background:#f9fafb;color:#374151;font-size:18px;cursor:pointer;">−</button><span style="width:44px;text-align:center;font-size:15px;color:#111;">'+esc(p.value)+'</span><button style="width:36px;height:36px;border:none;background:#f9fafb;color:#374151;font-size:18px;cursor:pointer;">+</button></div></div>';
+        }},
+      { type: 'section-title', name: '分区标题', category: 'ecom',
+        defaults: { title: '热销推荐', moreText: '查看更多', color: '#111827' },
+        render: function(p) {
+          return '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 6px;font-family:system-ui,sans-serif;"><span style="font-size:16px;font-weight:600;color:'+p.color+';">'+esc(p.title)+'</span><span style="font-size:12px;color:#9ca3af;">'+esc(p.moreText)+' ›</span></div>';
+        }},
+      { type: 'spacer', name: '空白间距', category: 'ecom',
+        defaults: { height: 16, bgColor: 'transparent' },
+        render: function(p) { return '<div style="height:'+p.height+'px;background:'+p.bgColor+';"></div>'; } },
+    ];
+
+    const CATEGORIES = [
+      { id: 'icons', label: '图标' },
+      { id: 'nav', label: '导航' },
+      { id: 'btn', label: '按钮' },
+      { id: 'ecom', label: '电商' },
+    ];
+    const COLOR_PRESETS = ['#ef4444','#f59e0b','#22c55e','#3b82f6','#8b5cf6','#ec4899','#111827','#6b7280','#ffffff','#f3f4f6'];
+
+    const STORAGE_KEY = 'diy-builder-v3';
+    var projects = {};
+    var currentProjectId = null;
+    var elements = [];
+    var selectedId = null;
+    var currentTab = 'ecom';
+    var phoneMode = true;
+    var dragType = null;
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
-
-    function insertComponent(category, index) {
-      const item = COMPONENTS[category][index];
-      if (!item) return;
-
-      const code = item.code;
-      const textarea = codeEl;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const before = textarea.value.substring(0, start);
-      const after = textarea.value.substring(end);
-
-      // 在光标位置插入，前后加换行方便阅读
-      const insertText = (before && !before.endsWith('\n') ? '\n' : '') + code + '\n';
-      textarea.value = before + insertText + after;
-
-      // 恢复光标
-      const newPos = start + insertText.length;
-      textarea.selectionStart = textarea.selectionEnd = newPos;
-      textarea.focus();
-
-      updatePreview();
-      showToast(`已插入「${item.name}」`);
-    }
-
-    function showToast(msg) {
-      const t = document.getElementById('toast');
+    function uid() { return 'el_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+    function toast(msg) {
+      var t = document.getElementById('toast');
       t.textContent = msg;
       t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 1800);
+      setTimeout(function(){ t.classList.remove('show'); }, 2000);
+    }
+    function getDef(type) {
+      for (var i=0;i<COMPONENT_DEFS.length;i++) if (COMPONENT_DEFS[i].type===type) return COMPONENT_DEFS[i];
+      return null;
     }
 
-    // ==================== 预览 & 编辑 ====================
-    function updatePreview() {
-      const doc = preview.contentDocument || preview.contentWindow.document;
-      doc.open();
-      doc.write(codeEl.value);
-      doc.close();
-      statusEl.textContent = '已更新 ' + new Date().toLocaleTimeString();
+    function loadProjects() {
+      try { projects = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { projects = {}; }
+    }
+    function persistProjects() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
     }
 
-    codeEl.addEventListener('input', () => {
-      updatePreview();
-      // 自动本地备份
-      localStorage.setItem('diy-current-code', codeEl.value);
-    });
-
-    // ==================== 项目管理（纯本地，无需登录） ====================
-    function getProjects() {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-      } catch {
-        return {};
-      }
+    function showHome() {
+      document.getElementById('homeView').style.display = 'flex';
+      document.getElementById('editorView').classList.remove('show');
     }
-
-    function saveProjects(obj) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    function showEditor() {
+      document.getElementById('homeView').style.display = 'none';
+      document.getElementById('editorView').classList.add('show');
     }
-
-    function renderProjectList() {
-      const projects = getProjects();
-      const list = Object.values(projects).sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-      if (list.length === 0) {
-        projectListEl.innerHTML = '<div style="padding:16px;color:#64748b;font-size:12px;text-align:center;">暂无项目<br>点击「新建项目」开始</div>';
-        return;
-      }
-      projectListEl.innerHTML = list.map(p => `
-        <div class="project-item ${p.id === currentProjectId ? 'active' : ''}" onclick="openProject('${p.id}')">
-          <div class="title">${escapeHtml(p.title)}</div>
-          <div class="meta">${new Date(p.updated_at).toLocaleString()}</div>
-        </div>
-      `).join('');
+    function backToHome() {
+      if (elements.length && !confirm('返回首页？未保存的修改将丢失（请先点保存）')) return;
+      showHome();
     }
 
     function createNewProject() {
-      currentProjectId = null;
-      projectTitleEl.value = '我的新网页';
-      currentProjectHint.textContent = '当前：未保存的新项目';
-      codeEl.value = getDefaultHTML();
-      updatePreview();
-      renderProjectList();
-      showToast('已创建新项目，开始搭建吧');
-    }
-
-    function saveCurrentProject() {
-      const title = projectTitleEl.value.trim() || '未命名项目';
-      const html = codeEl.value;
-      if (!html.trim()) {
-        alert('代码不能为空');
-        return;
-      }
-      const projects = getProjects();
-      const now = new Date().toISOString();
-      const id = currentProjectId || ('p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
-
-      projects[id] = {
-        id,
-        title,
-        html,
-        updated_at: now,
-        created_at: projects[id]?.created_at || now
-      };
-      saveProjects(projects);
+      var title = prompt('项目名称', '我的电商页面') || '我的电商页面';
+      var id = 'p_' + Date.now().toString(36);
       currentProjectId = id;
-      currentProjectHint.textContent = '当前：' + title;
-      renderProjectList();
-      statusEl.textContent = '已保存 ' + new Date().toLocaleTimeString();
-      showToast('项目已保存到本地');
-
-      // 同时尝试同步到服务器（可选，失败不影响）
-      fetch('/api/projects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, title, html, clientId: CLIENT_ID })
-      }).catch(() => {});
+      elements = [];
+      selectedId = null;
+      projects[id] = { id: id, title: title, elements: [], updated_at: new Date().toISOString(), created_at: new Date().toISOString() };
+      persistProjects();
+      document.getElementById('editorTitle').textContent = title;
+      document.getElementById('saveStatus').textContent = '新项目';
+      showEditor();
+      renderPalette();
+      renderCanvas();
+      renderProps();
+      toast('已创建空白项目，从左侧拖入组件开始搭建');
     }
 
     function openProject(id) {
-      const projects = getProjects();
-      const p = projects[id];
+      var p = projects[id];
       if (!p) return;
       currentProjectId = id;
-      projectTitleEl.value = p.title;
-      currentProjectHint.textContent = '当前：' + p.title;
-      codeEl.value = p.html;
-      updatePreview();
-      renderProjectList();
-      showToast('已打开：' + p.title);
+      elements = JSON.parse(JSON.stringify(p.elements || []));
+      selectedId = null;
+      document.getElementById('editorTitle').textContent = p.title;
+      document.getElementById('saveStatus').textContent = '已打开';
+      hideProjectsModal();
+      showEditor();
+      renderPalette();
+      renderCanvas();
+      renderProps();
+      toast('已打开：' + p.title);
+    }
+
+    function saveProject() {
+      if (!currentProjectId) return;
+      var p = projects[currentProjectId];
+      if (!p) return;
+      p.elements = JSON.parse(JSON.stringify(elements));
+      p.updated_at = new Date().toISOString();
+      persistProjects();
+      document.getElementById('saveStatus').textContent = '已保存 ' + new Date().toLocaleTimeString();
+      toast('项目已保存');
+      var html = generateFullHTML();
+      fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: currentProjectId, title: p.title, html: html })
+      }).catch(function(){});
+    }
+
+    function deleteProject(id, e) {
+      e.stopPropagation();
+      if (!confirm('确定删除该项目？')) return;
+      delete projects[id];
+      persistProjects();
+      renderProjectsList();
+      if (currentProjectId === id) { currentProjectId = null; showHome(); }
+      toast('已删除');
+    }
+
+    function showProjectsModal() {
+      loadProjects();
+      renderProjectsList();
+      document.getElementById('projectsModal').classList.add('show');
+    }
+    function hideProjectsModal() {
+      document.getElementById('projectsModal').classList.remove('show');
+    }
+    function renderProjectsList() {
+      var list = Object.keys(projects).map(function(k){ return projects[k]; }).sort(function(a,b){ return new Date(b.updated_at) - new Date(a.updated_at); });
+      var el = document.getElementById('projectsList');
+      if (!list.length) {
+        el.innerHTML = '<div class="empty-projects">暂无项目<br>点击下方「新建项目」开始</div>';
+        return;
+      }
+      el.innerHTML = list.map(function(p) {
+        return '<div class="project-item" onclick="openProject(\''+p.id+'\')">'+
+          '<div class="info"><div class="title">'+esc(p.title)+'</div>'+
+          '<div class="meta">'+(p.elements||[]).length+' 个组件 · '+new Date(p.updated_at).toLocaleString()+'</div></div>'+
+          '<button class="del-btn" onclick="deleteProject(\''+p.id+'\', event)" title="删除">🗑</button></div>';
+      }).join('');
+    }
+
+    function renderPalette() {
+      var tabs = document.getElementById('paletteTabs');
+      tabs.innerHTML = CATEGORIES.map(function(c) {
+        return '<button class="palette-tab '+(c.id===currentTab?'active':'')+'" onclick="switchTab(\''+c.id+'\')">'+c.label+'</button>';
+      }).join('');
+      var list = document.getElementById('paletteList');
+      var comps = COMPONENT_DEFS.filter(function(d){ return d.category===currentTab; });
+      list.innerHTML = '<div class="palette-hint">按住组件拖到中间画布，或点击快速添加</div>' +
+        comps.map(function(d) {
+          return '<div class="comp-card" draggable="true" data-type="'+d.type+'" ondragstart="onPaletteDragStart(event,\''+d.type+'\')" onclick="addComponent(\''+d.type+'\')">'+
+            '<div class="comp-preview">'+d.render(d.defaults)+'</div>'+
+            '<div class="comp-name">'+esc(d.name)+'</div></div>';
+        }).join('');
+    }
+    function switchTab(id) { currentTab = id; renderPalette(); }
+
+    function addComponent(type) {
+      var def = getDef(type);
+      if (!def) return;
+      var el = { id: uid(), type: type, props: Object.assign({}, def.defaults) };
+      elements.push(el);
+      selectedId = el.id;
+      renderCanvas();
+      renderProps();
+      toast('已添加：' + def.name);
+    }
+    function onPaletteDragStart(e, type) {
+      dragType = type;
+      e.dataTransfer.setData('text/plain', type);
+      e.dataTransfer.effectAllowed = 'copy';
+    }
+    function setupDropZone() {
+      var zone = document.getElementById('dropZone');
+      var canvas = document.getElementById('canvas');
+      canvas.addEventListener('dragover', function(e){ e.preventDefault(); zone.classList.add('drag-over'); });
+      canvas.addEventListener('dragenter', function(e){ e.preventDefault(); zone.classList.add('drag-over'); });
+      canvas.addEventListener('dragleave', function(e){ if (!canvas.contains(e.relatedTarget)) zone.classList.remove('drag-over'); });
+      canvas.addEventListener('drop', function(e){
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        var type = e.dataTransfer.getData('text/plain') || dragType;
+        if (type) addComponent(type);
+        dragType = null;
+      });
+    }
+
+    function renderCanvas() {
+      var zone = document.getElementById('dropZone');
+      if (!elements.length) {
+        zone.innerHTML = '<div class="empty-hint"><div style="font-size:32px;opacity:.4;">↓</div><div>从左侧拖入组件</div><div style="font-size:12px;">或点击组件快速添加</div></div>';
+        return;
+      }
+      zone.innerHTML = elements.map(function(el) {
+        var def = getDef(el.type);
+        if (!def) return '';
+        return '<div class="canvas-el '+(el.id===selectedId?'selected':'')+'" data-id="'+el.id+'" onclick="selectEl(\''+el.id+'\', event)">'+
+          '<div class="el-actions">'+
+            '<button onclick="moveEl(\''+el.id+'\',-1,event)" title="上移">↑</button>'+
+            '<button onclick="moveEl(\''+el.id+'\',1,event)" title="下移">↓</button>'+
+            '<button class="btn-del" onclick="removeEl(\''+el.id+'\',event)" title="删除">×</button>'+
+          '</div>'+def.render(el.props)+'</div>';
+      }).join('');
+    }
+
+    function selectEl(id, e) {
+      if (e) e.stopPropagation();
+      selectedId = id;
+      renderCanvas();
+      renderProps();
+    }
+    function removeEl(id, e) {
+      e.stopPropagation();
+      elements = elements.filter(function(el){ return el.id !== id; });
+      if (selectedId === id) selectedId = null;
+      renderCanvas();
+      renderProps();
+    }
+    function moveEl(id, dir, e) {
+      e.stopPropagation();
+      var idx = -1;
+      for (var i=0;i<elements.length;i++) if (elements[i].id===id) { idx=i; break; }
+      if (idx < 0) return;
+      var newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= elements.length) return;
+      var tmp = elements[idx];
+      elements[idx] = elements[newIdx];
+      elements[newIdx] = tmp;
+      renderCanvas();
+    }
+    function clearCanvas() {
+      if (!elements.length) return;
+      if (!confirm('确定清空画布上的所有组件？')) return;
+      elements = [];
+      selectedId = null;
+      renderCanvas();
+      renderProps();
+    }
+    function togglePhoneMode() {
+      phoneMode = !phoneMode;
+      document.getElementById('canvas').classList.toggle('phone', phoneMode);
+    }
+
+    function renderProps() {
+      var body = document.getElementById('propsBody');
+      var el = null;
+      for (var i=0;i<elements.length;i++) if (elements[i].id===selectedId) { el=elements[i]; break; }
+      if (!el) {
+        body.innerHTML = '<div class="props-empty">选中画布中的组件<br>即可修改颜色、文字等</div>';
+        return;
+      }
+      var def = getDef(el.type);
+      var props = el.props;
+      var html = '<div style="font-size:13px;font-weight:600;margin-bottom:14px;color:#e2e8f0;">'+esc(def.name)+'</div>';
+      var keys = Object.keys(props);
+      for (var k=0;k<keys.length;k++) {
+        var key = keys[k];
+        var val = props[key];
+        var isColor = /color|Color|bgColor|textColor|borderColor|priceColor|btnColor|activeColor|inactiveColor/i.test(key);
+        var label = propLabel(key);
+        if (isColor) {
+          html += '<div class="prop-group"><label>'+label+'</label><div class="color-row">'+
+            '<input type="color" value="'+toHex(val)+'" oninput="updateProp(\''+key+'\', this.value)">'+
+            '<input type="text" value="'+esc(val)+'" onchange="updateProp(\''+key+'\', this.value)" style="flex:1;"></div>'+
+            '<div class="color-presets">'+COLOR_PRESETS.map(function(c){
+              return '<div class="color-swatch" style="background:'+c+';'+(c==='#ffffff'?'border:1px solid #ccc;':'')+'" onclick="updateProp(\''+key+'\',\''+c+'\')"></div>';
+            }).join('')+'</div></div>';
+        } else if (typeof val === 'number' || key === 'size' || key === 'height' || key === 'radius' || key === 'value') {
+          html += '<div class="prop-group"><label>'+label+'</label><input type="number" value="'+val+'" onchange="updateProp(\''+key+'\', +this.value||this.value)"></div>';
+        } else {
+          html += '<div class="prop-group"><label>'+label+'</label><input type="text" value="'+esc(val)+'" onchange="updateProp(\''+key+'\', this.value)"></div>';
+        }
+      }
+      body.innerHTML = html;
+    }
+
+    function propLabel(key) {
+      var map = {
+        color:'颜色', size:'尺寸', bgColor:'背景色', textColor:'文字颜色',
+        logoText:'Logo文字', menu1:'菜单1', menu2:'菜单2',
+        text:'按钮文字', radius:'圆角', borderColor:'边框色',
+        title:'标题', subtitle:'副标题', bgColor1:'渐变色1', bgColor2:'渐变色2',
+        placeholder:'占位文字', name:'商品名称', price:'价格', originPrice:'原价',
+        sales:'销量', priceColor:'价格颜色', btnColor:'按钮颜色', btnText:'按钮文字',
+        value:'数量', moreText:'更多文字', height:'高度',
+        activeColor:'选中色', inactiveColor:'未选中色'
+      };
+      return map[key] || key;
+    }
+    function toHex(c) {
+      if (!c) return '#000000';
+      if (c.indexOf('#')===0 && c.length===7) return c;
+      return '#3b82f6';
+    }
+    function updateProp(key, value) {
+      var el = null;
+      for (var i=0;i<elements.length;i++) if (elements[i].id===selectedId) { el=elements[i]; break; }
+      if (!el) return;
+      el.props[key] = value;
+      renderCanvas();
+      if (/color|Color/i.test(key)) renderProps();
+    }
+
+    function generateFullHTML() {
+      var title = (projects[currentProjectId] && projects[currentProjectId].title) || '我的页面';
+      var body = elements.map(function(el) {
+        var def = getDef(el.type);
+        return def ? def.render(el.props) : '';
+      }).join('\n');
+      return '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>'+esc(title)+'</title>\n<style>\n* { margin:0; padding:0; box-sizing:border-box; }\nbody { font-family:system-ui,-apple-system,sans-serif; background:#f5f5f5; color:#111; max-width:430px; margin:0 auto; min-height:100vh; }\n</style>\n</head>\n<body>\n'+body+'\n</body>\n</html>';
     }
 
     function exportHTML() {
-      const title = projectTitleEl.value.trim() || 'my-website';
-      const blob = new Blob([codeEl.value], { type: 'text/html;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
+      if (!elements.length) { alert('画布为空，请先添加组件'); return; }
+      var html = generateFullHTML();
+      var title = (projects[currentProjectId] && projects[currentProjectId].title) || 'my-page';
+      var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
       a.download = title.replace(/[\\/:*?"<>|]/g, '_') + '.html';
       a.click();
-      URL.revokeObjectURL(url);
-      showToast('代码已导出');
+      URL.revokeObjectURL(a.href);
+      toast('代码已导出');
     }
 
-    function clearCode() {
-      if (confirm('确定清空当前代码吗？')) {
-        codeEl.value = '';
-        updatePreview();
-      }
+    function previewPage() {
+      var html = generateFullHTML();
+      document.getElementById('previewModal').classList.add('show');
+      document.getElementById('previewFrame').srcdoc = html;
+    }
+    function hidePreviewModal() {
+      document.getElementById('previewModal').classList.remove('show');
     }
 
-    function loadExample() {
-      codeEl.value = getDefaultHTML();
-      updatePreview();
-      showToast('已加载示例页面');
-    }
-
-    function getDefaultHTML() {
-      return `<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>我的电商页面</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #111; padding-bottom: 70px; }
-  </style>
-</head>
-<body>
-  <!-- 从左侧组件库点击插入导航、商品卡片、按钮等来搭建你的页面 -->
-  <div style="padding:40px 20px;text-align:center;color:#9ca3af;">
-    <p style="font-size:15px;margin-bottom:8px;">开始搭建你的网页</p>
-    <p style="font-size:13px;">点击左侧「图标 / 导航 / 按钮 / 弹窗 / 电商」组件即可插入</p>
-  </div>
-</body>
-</html>`;
-    }
-
-    function escapeHtml(str) {
-      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    // ==================== 发布 ====================
     function showPublishModal() {
-      if (!currentProjectId) {
-        alert('请先保存项目，再发布');
-        return;
-      }
+      if (!currentProjectId) { alert('请先保存项目'); return; }
+      if (!elements.length) { alert('画布为空'); return; }
       document.getElementById('publishError').textContent = '';
       document.getElementById('publishSlug').value = '';
-      document.getElementById('previewPublishUrl').textContent = location.origin + '/p/xxx';
+      document.getElementById('publishUrlPreview').textContent = location.origin + '/p/xxx';
       document.getElementById('publishModal').classList.add('show');
-      document.getElementById('publishSlug').oninput = (e) => {
-        const slug = e.target.value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
-        document.getElementById('previewPublishUrl').textContent = location.origin + '/p/' + (slug || 'xxx');
+      document.getElementById('publishSlug').oninput = function(e) {
+        var s = e.target.value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+        document.getElementById('publishUrlPreview').textContent = location.origin + '/p/' + (s || 'xxx');
       };
     }
-
     function hidePublishModal() {
       document.getElementById('publishModal').classList.remove('show');
     }
-
-    async function doPublish() {
-      const slug = document.getElementById('publishSlug').value.trim().toLowerCase();
-      const errEl = document.getElementById('publishError');
-      errEl.textContent = '';
+    function doPublish() {
+      var slug = document.getElementById('publishSlug').value.trim().toLowerCase();
+      var err = document.getElementById('publishError');
+      err.textContent = '';
       if (!/^[a-z0-9-]{3,30}$/.test(slug)) {
-        errEl.textContent = 'slug 只能包含小写字母、数字和短横线，长度 3-30';
+        err.textContent = 'slug 只能包含小写字母、数字、短横线，长度 3-30';
         return;
       }
-      try {
-        // 先确保最新代码已同步
-        await fetch('/api/projects', {
+      saveProject();
+      var html = generateFullHTML();
+      fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: currentProjectId, title: projects[currentProjectId].title, html: html })
+      }).then(function() {
+        return fetch('/api/projects/' + currentProjectId + '/publish', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: currentProjectId,
-            title: projectTitleEl.value.trim(),
-            html: codeEl.value,
-            clientId: CLIENT_ID
-          })
+          body: JSON.stringify({ slug: slug })
         });
-        const res = await fetch('/api/projects/' + currentProjectId + '/publish', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ slug })
+      }).then(function(res) {
+        return res.json().then(function(data) {
+          if (!res.ok) throw new Error(data.error || '发布失败');
+          hidePublishModal();
+          alert('发布成功！\n' + location.origin + data.url);
+          toast('发布成功');
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || '发布失败');
-        hidePublishModal();
-        alert('发布成功！\\n访问地址：' + location.origin + data.url);
-        showToast('发布成功');
-      } catch (e) {
-        errEl.textContent = e.message;
-      }
+      }).catch(function(e) {
+        err.textContent = e.message;
+      });
     }
 
-    // ==================== 快捷键 ====================
-    document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        saveCurrentProject();
-      }
-    });
-
-    // ==================== 初始化 ====================
     function init() {
-      renderComponents();
-      renderProjectList();
-
-      // 恢复上次编辑内容
-      const lastCode = localStorage.getItem('diy-current-code');
-      if (lastCode) {
-        codeEl.value = lastCode;
-      } else {
-        codeEl.value = getDefaultHTML();
-      }
-      updatePreview();
+      loadProjects();
+      renderPalette();
+      setupDropZone();
+      document.getElementById('canvas').addEventListener('click', function(e) {
+        if (e.target.id === 'canvas' || e.target.id === 'dropZone' || e.target.classList.contains('empty-hint')) {
+          selectedId = null;
+          renderCanvas();
+          renderProps();
+        }
+      });
     }
-
     init();
   </script>
 </body>
