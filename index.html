@@ -970,6 +970,8 @@
       { type: 'nav-top', name: '顶部导航', category: 'nav',
         defaults: {
           bgColor: '#ffffff', textColor: '#111827', height: 48,
+          activeIndex: 0, activeColor: '#3b82f6',
+          effectColor: true, effectUnderline: true, effectStroke: false,
           items: [
             { kind: 'text', text: 'Shop', page: '' },
             { kind: 'text', text: '首页', page: '' },
@@ -980,15 +982,21 @@
         },
         render: function(p) {
           var items = p.items || [];
+          var activeIndex = parseInt(p.activeIndex, 10); if (isNaN(activeIndex)) activeIndex = -1;
           var left = '', right = '';
           for (var i=0;i<items.length;i++) {
             var it = items[i];
+            var on = i === activeIndex;
+            var c = (on && p.effectColor !== false) ? (p.activeColor || '#3b82f6') : (p.textColor || '#111827');
+            var cls = 'tab-fx';
+            if (on && p.effectUnderline) cls += ' fx-underline';
+            if (on && p.effectStroke) cls += ' fx-stroke';
             var bit = '';
             if (it.kind === 'icon' && ICONS[it.icon]) {
-              bit = '<span data-role="link" data-page="'+esc(it.page||'')+'" style="display:inline-flex;color:'+p.textColor+';padding:4px 6px;cursor:pointer;">'+iconS(ICONS[it.icon],18)+'</span>';
+              bit = '<span class="'+cls+'" data-role="link" data-page="'+esc(it.page||'')+'" style="display:inline-flex;color:'+c+';padding:6px 8px;cursor:pointer;">'+iconS(ICONS[it.icon],18)+'</span>';
               right += bit;
             } else {
-              bit = '<span data-role="link" data-page="'+esc(it.page||'')+'" style="color:'+p.textColor+';font-size:'+(i===0?17:13)+'px;font-weight:'+(i===0?700:500)+';padding:4px 8px;cursor:pointer;text-decoration:none;">'+esc(it.text||'')+'</span>';
+              bit = '<span class="'+cls+'" data-role="link" data-page="'+esc(it.page||'')+'" style="color:'+c+';font-size:'+(i===0&&it.kind==='text'?17:13)+'px;font-weight:'+(on||i===0?700:500)+';padding:6px 8px;cursor:pointer;text-decoration:none;">'+esc(it.text||'')+'</span>';
               left += bit;
             }
           }
@@ -2050,15 +2058,21 @@
 
     function renderNavItemsEditor(el) {
       var items = ensureItems(el);
-      var h = '<p style="font-size:12px;color:var(--muted);margin-bottom:10px;">可添加文字或图标，每一项都能设置跳转页面</p>';
+      var activeIndex = parseInt(el.props.activeIndex, 10);
+      if (isNaN(activeIndex)) activeIndex = 0;
+      var h = '<p style="font-size:12px;color:var(--muted);margin-bottom:10px;">可添加文字或图标；点「设为选中目标」指定哪一项显示选中效果</p>';
       h += '<div class="nav-add-row">';
       h += '<button type="button" class="btn-primary" onclick="addNavItem(\'text\')">+ 添加文字</button>';
       h += '<button type="button" class="btn-secondary" onclick="addNavItem(\'icon\')">+ 添加图标</button>';
       h += '</div>';
       for (var i=0;i<items.length;i++) {
         var it = items[i];
-        h += '<div class="nav-item-row">';
-        h += '<span style="font-size:11px;color:var(--muted);width:100%;">第 '+(i+1)+' 项 · '+(it.kind==='icon'?'图标':'文字')+'</span>';
+        var isTarget = activeIndex === i;
+        h += '<div class="nav-item-row" style="'+(isTarget?'border-color:#3b82f6;box-shadow:0 0 0 1px rgba(59,130,246,.4);':'')+'">';
+        h += '<span style="font-size:11px;color:var(--muted);width:100%;display:flex;justify-content:space-between;align-items:center;">';
+        h += '<span>第 '+(i+1)+' 项 · '+(it.kind==='icon'?'图标':'文字')+'</span>';
+        if (isTarget) h += '<span style="color:#60a5fa;">✓ 选中目标</span>';
+        h += '</span>';
         if (it.kind === 'icon') {
           h += '<div style="width:100%;"><label style="font-size:11px;color:var(--muted);">选择图标</label>'+iconPickerHtml(it.icon||'home', i)+'</div>';
           h += '<div style="width:100%;"><label style="font-size:11px;color:var(--muted);">下方文字（可选）</label><input type="text" value="'+esc(it.text||'')+'" onchange="updateNavItem('+i+',\'text\',this.value)" placeholder="如：首页"></div>';
@@ -2066,7 +2080,10 @@
           h += '<div style="width:100%;"><label style="font-size:11px;color:var(--muted);">文字</label><input type="text" value="'+esc(it.text||'')+'" onchange="updateNavItem('+i+',\'text\',this.value)" placeholder="输入文字"></div>';
         }
         h += '<div style="width:100%;"><label style="font-size:11px;color:var(--muted);">跳转页面</label>'+pageSelectHtml(it.page||'', "updateNavItem("+i+",'page',this.value)")+'</div>';
+        h += '<div style="display:flex;gap:6px;width:100%;flex-wrap:wrap;">';
+        h += '<button type="button" class="'+(isTarget?'btn-primary':'btn-secondary')+'" style="padding:4px 10px;font-size:11px;" onclick="updateProp(\'activeIndex\','+i+')">设为选中目标</button>';
         h += '<button type="button" class="btn-danger" style="padding:4px 10px;font-size:11px;" onclick="removeNavItem('+i+')">删除</button>';
+        h += '</div>';
         h += '</div>';
       }
       return h;
@@ -2110,28 +2127,65 @@
     }
 
 
-    function renderSelectionEffectProps(props, isIcon) {
-      var h = '<div class="prop-group" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;"><label style="font-weight:600;color:#e2e8f0;">选中效果</label>';
+    function renderSelectionEffectProps(props, isIcon, el) {
+      var h = '<div class="prop-group" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;">';
+      h += '<label style="font-weight:600;color:#e2e8f0;">选中目标与效果</label>';
+
       if (isIcon) {
-        h += '<div style="margin-top:8px;"><label style="font-size:11px;color:var(--muted);">换成任意图标</label>';
+        h += '<p style="font-size:11px;color:var(--muted);margin:8px 0;">可换成任意图标，并设置选中时的样式</p>';
+        h += '<div style="margin-top:8px;"><label style="font-size:11px;color:var(--muted);">图标图形</label>';
         h += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">';
         var keys = ICON_PICK_KEYS || [];
         for (var i=0;i<keys.length;i++) {
           var k = keys[i];
           if (!ICONS[k]) continue;
-          var act = (props.icon===k || (!props.icon && false)) ? 'border-color:#3b82f6;background:#1e3a5f;' : '';
+          var act = (props.icon === k) ? 'border-color:#3b82f6;background:#1e3a5f;' : '';
           h += '<button type="button" style="width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:#1e293b;color:#e2e8f0;display:flex;align-items:center;justify-content:center;padding:0;'+act+'" onclick="updateProp(\'icon\',\''+k+'\')">'+iconS(ICONS[k],18)+'</button>';
         }
         h += '</div></div>';
-        h += '<div class="prop-group"><label>模拟选中状态</label><select onchange="updateProp(\'isActive\', this.value===\'1\')"><option value="0"'+(props.isActive?'':' selected')+'>未选中</option><option value="1"'+(props.isActive?' selected':'')+'>选中</option></select></div>';
+        h += '<div class="prop-group"><label>是否为选中状态</label><div style="display:flex;gap:8px;margin-top:6px;">';
+        h += '<button type="button" class="'+(props.isActive?'btn-primary':'btn-secondary')+'" style="padding:6px 12px;font-size:12px;" onclick="updateProp(\'isActive\', true)">选中</button>';
+        h += '<button type="button" class="'+(!props.isActive?'btn-primary':'btn-secondary')+'" style="padding:6px 12px;font-size:12px;" onclick="updateProp(\'isActive\', false)">未选中</button>';
+        h += '</div></div>';
       } else {
-        h += '<div class="prop-group"><label>当前选中第几项（从 0 开始）</label><input type="number" min="0" value="'+(props.activeIndex!=null?props.activeIndex:0)+'" onchange="updateProp(\'activeIndex\', +this.value||0)"></div>';
+        // 多项目：列出每一项，点选「设为选中目标」
+        var items = (el && el.props && el.props.items) ? el.props.items : null;
+        var listLabels = [];
+        if (items && items.length) {
+          for (var j=0;j<items.length;j++) {
+            var it = items[j];
+            if (it.kind === 'icon') listLabels.push({ i:j, label: '第'+(j+1)+'项 · 图标 '+(it.icon||'')+(it.text?(' '+it.text):'') });
+            else listLabels.push({ i:j, label: '第'+(j+1)+'项 · 文字 '+(it.text||'(空)') });
+          }
+        } else if (props.tabs) {
+          var tabs = String(props.tabs||'').split(/[,，]/).filter(Boolean);
+          for (var t=0;t<tabs.length;t++) listLabels.push({ i:t, label: '第'+(t+1)+'项 · '+tabs[t] });
+        }
+        var cur = parseInt(props.activeIndex, 10);
+        if (isNaN(cur)) cur = 0;
+        h += '<p style="font-size:11px;color:var(--muted);margin:8px 0;">点下面某一项，把它设为「选中目标」（可任意图标或文字）</p>';
+        h += '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">';
+        for (var n=0;n<listLabels.length;n++) {
+          var row = listLabels[n];
+          var on = cur === row.i;
+          h += '<button type="button" onclick="updateProp(\'activeIndex\','+row.i+')" style="text-align:left;padding:10px 12px;border-radius:8px;border:1px solid '+(on?'#3b82f6':'var(--border)')+';background:'+(on?'#1e3a5f':'#0f172a')+';color:#e2e8f0;font-size:12px;display:flex;align-items:center;justify-content:space-between;">';
+          h += '<span>'+esc(row.label)+'</span>';
+          h += '<span style="font-size:11px;color:'+(on?'#60a5fa':'var(--muted)')+';">'+(on?'✓ 选中目标':'设为选中')+'</span>';
+          h += '</button>';
+        }
+        if (!listLabels.length) {
+          h += '<div style="font-size:12px;color:var(--muted);">暂无项目，请先添加文字或图标</div>';
+        }
+        h += '</div>';
+        h += '<div class="prop-group"><label>或输入第几项（从 1 开始）</label>';
+        h += '<input type="number" min="1" value="'+(cur+1)+'" onchange="updateProp(\'activeIndex\', Math.max(0, (+this.value||1)-1))" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:#0f172a;color:var(--text);"></div>';
       }
+
       h += '<div class="prop-group"><label>选中颜色</label><div class="color-row"><input type="color" value="'+toHex(props.activeColor||'#3b82f6')+'" oninput="updateProp(\'activeColor\', this.value)"><input type="text" value="'+esc(props.activeColor||'#3b82f6')+'" onchange="updateProp(\'activeColor\', this.value)" style="flex:1;"></div></div>';
-      h += '<div class="prop-group"><label>效果开关</label>';
-      h += '<label style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12px;color:var(--text);"><input type="checkbox" '+(props.effectColor!==false?'checked':'')+' onchange="updateProp(\'effectColor\', this.checked)"> 改颜色</label>';
-      h += '<label style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12px;color:var(--text);"><input type="checkbox" '+(props.effectUnderline?'checked':'')+' onchange="updateProp(\'effectUnderline\', this.checked)"> 底部划线</label>';
-      h += '<label style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12px;color:var(--text);"><input type="checkbox" '+(props.effectStroke?'checked':'')+' onchange="updateProp(\'effectStroke\', this.checked)"> 描边变粗</label>';
+      h += '<div class="prop-group"><label>选中时样式（可多选）</label>';
+      h += '<label style="display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px;color:var(--text);"><input type="checkbox" '+(props.effectColor!==false?'checked':'')+' onchange="updateProp(\'effectColor\', this.checked)"> 改颜色</label>';
+      h += '<label style="display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px;color:var(--text);"><input type="checkbox" '+(props.effectUnderline?'checked':'')+' onchange="updateProp(\'effectUnderline\', this.checked)"> 底部划线</label>';
+      h += '<label style="display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px;color:var(--text);"><input type="checkbox" '+(props.effectStroke?'checked':'')+' onchange="updateProp(\'effectStroke\', this.checked)"> 描边变粗</label>';
       h += '</div></div>';
       return h;
     }
@@ -2175,7 +2229,7 @@
 
       var isIconType = (el.type || '').indexOf('icon-') === 0;
       if (isIconType) {
-        html += renderSelectionEffectProps(props, true);
+        html += renderSelectionEffectProps(props, true, el);
         // 基础颜色、大小、跳转
         html += '<div class="prop-group"><label>默认颜色（未选中）</label><div class="color-row"><input type="color" value="'+toHex(props.color||'#374151')+'" oninput="updateProp(\'color\', this.value)"></div></div>';
         html += '<div class="prop-group"><label>图标大小</label><input type="number" min="12" value="'+(props.size||24)+'" onchange="updateProp(\'size\', +this.value||24)"></div>';
@@ -2183,8 +2237,8 @@
         body.innerHTML = html;
         return;
       }
-      if (el.type === 'nav-bottom' || el.type === 'filter-tabs' || el.type === 'detail-tabs') {
-        html += renderSelectionEffectProps(props, false);
+      if (el.type === 'nav-top' || el.type === 'nav-bottom' || el.type === 'filter-tabs' || el.type === 'detail-tabs') {
+        html += renderSelectionEffectProps(props, false, el);
       }
 
       if (el.type === 'nav-top' || el.type === 'nav-bottom' || el.type === 'nav-back') {
