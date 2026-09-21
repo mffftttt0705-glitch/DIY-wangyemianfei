@@ -598,6 +598,43 @@
     .nav-add-row button { padding: 8px 12px; font-size: 12px; }
 
 
+
+    .canvas-drop-zone { position: relative; min-height: 100%; }
+    .canvas-el.layout-free {
+      position: absolute !important;
+      z-index: 5;
+      cursor: move;
+      max-width: 100%;
+    }
+    .canvas-el.layout-free.selected { z-index: 8; }
+    .canvas-el.pin-top, .canvas-el.pin-bottom {
+      position: sticky !important;
+      z-index: 15;
+      left: 0; right: 0;
+      width: 100%;
+    }
+    .canvas-el.pin-top { top: 0; }
+    .canvas-el.pin-bottom { bottom: 0; }
+    .pin-layer {
+      position: absolute; left: 0; right: 0; z-index: 25;
+      pointer-events: auto;
+    }
+    .pin-layer.top { top: 0; }
+    .pin-layer.bottom { bottom: 0; }
+    .phone-screen { isolation: isolate; }
+    .free-badge {
+      position: absolute; top: -18px; left: 0;
+      font-size: 9px; background: #8b5cf6; color: #fff;
+      padding: 1px 5px; border-radius: 4px; display: none; z-index: 22;
+    }
+    .canvas-el.selected .free-badge { display: block; }
+    .pin-badge {
+      position: absolute; top: -18px; right: 28px;
+      font-size: 9px; background: #f59e0b; color: #fff;
+      padding: 1px 5px; border-radius: 4px; display: none; z-index: 22;
+    }
+    .canvas-el.selected .pin-badge { display: block; }
+
   </style>
 </head>
 <body>
@@ -1034,6 +1071,180 @@
         render: function(p) {
           return '<div style="padding:'+p.padding+'px;font-size:'+p.fontSize+'px;color:'+p.color+';text-align:'+p.align+';line-height:1.6;font-family:system-ui,sans-serif;word-break:break-word;">'+esc(p.text)+'</div>';
         }},
+
+      { type: 'cate-grid', name: '分类宫格', category: 'ecom',
+        defaults: { bgColor: '#ffffff', textColor: '#374151', cols: 5, items: '推荐,女装,男装,数码,食品,家居,美妆,母婴,运动,更多' },
+        render: function(p) {
+          var list = String(p.items||'').split(/[,，]/).filter(Boolean);
+          var cols = p.cols || 5;
+          var html = '<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:8px 4px;padding:12px 8px;background:'+p.bgColor+';font-family:system-ui,sans-serif;">';
+          for (var i=0;i<list.length;i++) {
+            html += '<div style="text-align:center;"><div style="width:44px;height:44px;margin:0 auto 4px;border-radius:12px;background:#f3f4f6;"></div><div style="font-size:11px;color:'+p.textColor+';">'+esc(list[i])+'</div></div>';
+          }
+          return html + '</div>';
+        }},
+      { type: 'coupon-bar', name: '优惠券条', category: 'ecom',
+        defaults: { text: '满100减20', sub: '领取', bgColor: '#fef2f2', textColor: '#ef4444', btnColor: '#ef4444', linkPageId: '' },
+        render: function(p) {
+          return '<div data-role="tap" data-page="'+esc(p.linkPageId)+'" style="margin:8px 12px;padding:10px 12px;background:'+p.bgColor+';border-radius:8px;display:flex;align-items:center;justify-content:space-between;font-family:system-ui,sans-serif;cursor:pointer;">'+
+            '<span style="color:'+p.textColor+';font-size:13px;font-weight:600;">'+esc(p.text)+'</span>'+
+            '<span style="background:'+p.btnColor+';color:#fff;font-size:11px;padding:4px 10px;border-radius:12px;">'+esc(p.sub)+'</span></div>';
+        }},
+      { type: 'flash-sale', name: '限时秒杀', category: 'ecom',
+        defaults: { title: '限时秒杀', time: '02:15:30', bgColor: '#fff7ed', titleColor: '#ea580c' },
+        render: function(p) {
+          return '<div style="margin:8px 12px;padding:10px 12px;background:'+p.bgColor+';border-radius:10px;font-family:system-ui,sans-serif;">'+
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'+
+            '<span style="font-size:14px;font-weight:700;color:'+p.titleColor+';">'+esc(p.title)+'</span>'+
+            '<span style="font-size:12px;color:#9ca3af;">倒计时 <b style="color:#111;">'+esc(p.time)+'</b></span></div>'+
+            '<div style="display:flex;gap:8px;overflow:hidden;">'+
+            [1,2,3].map(function(){return '<div style="flex:1;min-width:0;"><div style="height:70px;background:#f3f4f6;border-radius:6px;"></div><div style="color:#ef4444;font-size:13px;font-weight:700;margin-top:4px;">¥</div></div>';}).join('')+
+            '</div></div>';
+        }},
+      { type: 'product-grid', name: '双列商品', category: 'ecom',
+        defaults: { priceColor: '#ef4444' },
+        render: function(p) {
+          function card() {
+            return '<div data-product="" style="background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);font-family:system-ui,sans-serif;">'+
+              '<div style="height:120px;background:#f0f0f0;"></div>'+
+              '<div style="padding:8px;"><div style="font-size:12px;color:#111;height:32px;overflow:hidden;"></div>'+
+              '<div style="color:'+p.priceColor+';font-size:15px;font-weight:700;margin-top:4px;">¥</div></div></div>';
+          }
+          return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 12px;">'+card()+card()+'</div>';
+        }},
+      { type: 'notice-bar', name: '公告栏', category: 'ecom',
+        defaults: { text: '全场包邮 · 品质保障', bgColor: '#fffbeb', textColor: '#b45309', linkPageId: '' },
+        render: function(p) {
+          return '<div data-role="tap" data-page="'+esc(p.linkPageId)+'" style="padding:8px 14px;background:'+p.bgColor+';color:'+p.textColor+';font-size:12px;font-family:system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;">📢 '+esc(p.text)+'</div>';
+        }},
+      { type: 'filter-tabs', name: '筛选标签', category: 'ecom',
+        defaults: { tabs: '综合,销量,价格,筛选', activeColor: '#ef4444', textColor: '#6b7280' },
+        render: function(p) {
+          var list = String(p.tabs||'').split(/[,，]/).filter(Boolean);
+          var h = '<div style="display:flex;padding:8px 8px;background:#fff;border-bottom:1px solid #f3f4f6;font-family:system-ui,sans-serif;">';
+          for (var i=0;i<list.length;i++) {
+            var c = i===0 ? p.activeColor : p.textColor;
+            var w = i===0 ? '700' : '400';
+            h += '<div style="flex:1;text-align:center;font-size:13px;color:'+c+';font-weight:'+w+';">'+esc(list[i])+'</div>';
+          }
+          return h + '</div>';
+        }},
+      { type: 'rank-list', name: '排行榜', category: 'ecom',
+        defaults: { title: '热卖榜', priceColor: '#ef4444' },
+        render: function(p) {
+          var h = '<div style="margin:8px 12px;background:#fff;border-radius:10px;padding:10px;font-family:system-ui,sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.05);">';
+          h += '<div style="font-size:14px;font-weight:700;margin-bottom:8px;">🔥 '+esc(p.title)+'</div>';
+          for (var i=1;i<=3;i++) {
+            h += '<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid #f3f4f6;">'+
+              '<span style="width:18px;height:18px;border-radius:4px;background:'+(i===1?'#ef4444':i===2?'#f59e0b':'#94a3b8')+';color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;">'+i+'</span>'+
+              '<div style="width:48px;height:48px;background:#f0f0f0;border-radius:6px;flex-shrink:0;"></div>'+
+              '<div style="flex:1;min-width:0;"><div style="font-size:12px;color:#111;height:16px;"></div><div style="color:'+p.priceColor+';font-size:14px;font-weight:700;margin-top:4px;">¥</div></div></div>';
+          }
+          return h + '</div>';
+        }},
+      { type: 'store-header', name: '店铺头', category: 'ecom',
+        defaults: { name: '官方旗舰店', fans: '100万粉丝', bgColor: '#1e293b', textColor: '#ffffff' },
+        render: function(p) {
+          return '<div style="padding:16px;background:'+p.bgColor+';color:'+p.textColor+';display:flex;align-items:center;gap:12px;font-family:system-ui,sans-serif;">'+
+            '<div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.2);"></div>'+
+            '<div><div style="font-size:15px;font-weight:700;">'+esc(p.name)+'</div><div style="font-size:11px;opacity:.8;margin-top:2px;">'+esc(p.fans)+'</div></div>'+
+            '<button style="margin-left:auto;background:#ef4444;color:#fff;border:none;padding:6px 14px;border-radius:14px;font-size:12px;">关注</button></div>';
+        }},
+      { type: 'buy-bar', name: '购买底栏', category: 'ecom',
+        defaults: { cartText: '加入购物车', buyText: '立即购买', cartColor: '#f59e0b', buyColor: '#ef4444', cartPage: '', buyPage: '' },
+        render: function(p) {
+          return '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fff;border-top:1px solid #eee;font-family:system-ui,sans-serif;">'+
+            '<button data-role="tap" data-page="'+esc(p.cartPage)+'" style="flex:1;height:40px;border:none;border-radius:20px;background:'+p.cartColor+';color:#fff;font-size:13px;font-weight:600;cursor:pointer;">'+esc(p.cartText)+'</button>'+
+            '<button data-role="tap" data-page="'+esc(p.buyPage)+'" style="flex:1;height:40px;border:none;border-radius:20px;background:'+p.buyColor+';color:#fff;font-size:13px;font-weight:600;cursor:pointer;">'+esc(p.buyText)+'</button></div>';
+        }},
+      { type: 'price-block', name: '价格区', category: 'ecom',
+        defaults: { price: '', origin: '', tag: '券后价', priceColor: '#ef4444' },
+        render: function(p) {
+          return '<div style="padding:10px 14px;background:#fff;font-family:system-ui,sans-serif;">'+
+            '<div style="display:flex;align-items:baseline;gap:6px;">'+
+            '<span style="color:'+p.priceColor+';font-size:11px;">¥</span>'+
+            '<span style="color:'+p.priceColor+';font-size:24px;font-weight:700;">'+esc(p.price)+'</span>'+
+            (p.origin?'<span style="color:#9ca3af;font-size:12px;text-decoration:line-through;">¥'+esc(p.origin)+'</span>':'')+
+            (p.tag?'<span style="background:#fef2f2;color:'+p.priceColor+';font-size:10px;padding:2px 6px;border-radius:4px;">'+esc(p.tag)+'</span>':'')+
+            '</div></div>';
+        }},
+      { type: 'sku-row', name: '规格选择', category: 'ecom',
+        defaults: { label: '颜色分类', options: '黑色,白色,蓝色', activeColor: '#ef4444' },
+        render: function(p) {
+          var opts = String(p.options||'').split(/[,，]/).filter(Boolean);
+          var h = '<div style="padding:10px 14px;background:#fff;font-family:system-ui,sans-serif;"><div style="font-size:13px;color:#6b7280;margin-bottom:8px;">'+esc(p.label)+'</div><div style="display:flex;flex-wrap:wrap;gap:8px;">';
+          for (var i=0;i<opts.length;i++) {
+            var st = i===0 ? 'border-color:'+p.activeColor+';color:'+p.activeColor+';background:#fef2f2;' : 'border-color:#e5e7eb;color:#374151;';
+            h += '<span style="padding:6px 12px;border:1px solid;border-radius:6px;font-size:12px;'+st+'">'+esc(opts[i])+'</span>';
+          }
+          return h + '</div></div>';
+        }},
+      { type: 'qty-stepper', name: '数量选择', category: 'ecom',
+        defaults: { label: '数量', value: '1' },
+        render: function(p) {
+          return '<div style="padding:10px 14px;background:#fff;display:flex;align-items:center;justify-content:space-between;font-family:system-ui,sans-serif;">'+
+            '<span style="font-size:13px;color:#6b7280;">'+esc(p.label)+'</span>'+
+            '<div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">'+
+            '<button style="width:32px;height:28px;border:none;background:#f9fafb;font-size:16px;">−</button>'+
+            '<span style="width:36px;text-align:center;font-size:13px;">'+esc(p.value)+'</span>'+
+            '<button style="width:32px;height:28px;border:none;background:#f9fafb;font-size:16px;">+</button></div></div>';
+        }},
+      { type: 'review-card', name: '评价卡片', category: 'ecom',
+        defaults: { user: '用户***', content: '', stars: '5' },
+        render: function(p) {
+          var stars = '';
+          var n = parseInt(p.stars,10)||5;
+          for (var i=0;i<5;i++) stars += i<n ? '★' : '☆';
+          return '<div style="margin:8px 12px;padding:12px;background:#fff;border-radius:10px;font-family:system-ui,sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.05);">'+
+            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><div style="width:28px;height:28px;border-radius:50%;background:#e5e7eb;"></div>'+
+            '<span style="font-size:12px;color:#6b7280;">'+esc(p.user)+'</span><span style="margin-left:auto;color:#f59e0b;font-size:12px;">'+stars+'</span></div>'+
+            '<div style="font-size:13px;color:#111;line-height:1.5;">'+esc(p.content)+'</div></div>';
+        }},
+      { type: 'tag-row', name: '服务标签', category: 'ecom',
+        defaults: { tags: '包邮,7天无理由,假一赔三', color: '#6b7280' },
+        render: function(p) {
+          var list = String(p.tags||'').split(/[,，]/).filter(Boolean);
+          var h = '<div style="display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px;background:#fff;font-family:system-ui,sans-serif;">';
+          for (var i=0;i<list.length;i++) h += '<span style="font-size:11px;color:'+p.color+';background:#f3f4f6;padding:3px 8px;border-radius:4px;">'+esc(list[i])+'</span>';
+          return h + '</div>';
+        }},
+      { type: 'image-block', name: '图片占位', category: 'ecom',
+        defaults: { height: 200, bgColor: '#f3f4f6', radius: 0, linkPageId: '' },
+        render: function(p) {
+          return '<div data-role="tap" data-page="'+esc(p.linkPageId)+'" style="height:'+p.height+'px;background:'+p.bgColor+';border-radius:'+p.radius+'px;cursor:pointer;"></div>';
+        }},
+      { type: 'float-btn', name: '悬浮按钮', category: 'ecom',
+        defaults: { text: '客服', bgColor: '#3b82f6', textColor: '#ffffff', linkPageId: '' },
+        render: function(p) {
+          return '<div data-role="tap" data-page="'+esc(p.linkPageId)+'" style="width:48px;height:48px;border-radius:50%;background:'+p.bgColor+';color:'+p.textColor+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.2);cursor:pointer;font-family:system-ui,sans-serif;">'+esc(p.text)+'</div>';
+        }},
+      { type: 'divider', name: '分割线', category: 'ecom',
+        defaults: { color: '#e5e7eb', margin: 8 },
+        render: function(p) {
+          return '<div style="height:1px;background:'+p.color+';margin:'+p.margin+'px 14px;"></div>';
+        }},
+      { type: 'detail-tabs', name: '详情页签', category: 'ecom',
+        defaults: { tabs: '商品,评价,详情', activeColor: '#ef4444' },
+        render: function(p) {
+          var list = String(p.tabs||'').split(/[,，]/).filter(Boolean);
+          var h = '<div style="display:flex;background:#fff;border-bottom:1px solid #f3f4f6;font-family:system-ui,sans-serif;">';
+          for (var i=0;i<list.length;i++) {
+            var c = i===0 ? p.activeColor : '#6b7280';
+            h += '<div style="flex:1;text-align:center;padding:12px 0;font-size:14px;color:'+c+';font-weight:'+(i===0?600:400)+';border-bottom:2px solid '+(i===0?p.activeColor:'transparent')+';">'+esc(list[i])+'</div>';
+          }
+          return h + '</div>';
+        }},
+      { type: 'address-bar', name: '收货地址', category: 'ecom',
+        defaults: { text: '配送至 北京市朝阳区', linkPageId: '' },
+        render: function(p) {
+          return '<div data-role="tap" data-page="'+esc(p.linkPageId)+'" style="padding:10px 14px;background:#fff;font-size:13px;color:#374151;font-family:system-ui,sans-serif;cursor:pointer;">📍 '+esc(p.text)+' ›</div>';
+        }},
+      { type: 'recommend-title', name: '猜你喜欢', category: 'ecom',
+        defaults: { title: '猜你喜欢', color: '#111827' },
+        render: function(p) {
+          return '<div style="padding:14px;text-align:center;font-size:14px;font-weight:600;color:'+p.color+';font-family:system-ui,sans-serif;">— '+esc(p.title)+' —</div>';
+        }},
+
     ];
 
     var CATEGORIES = [
@@ -1296,12 +1507,22 @@
     }
     function switchTab(id) { currentTab = id; renderPalette(); }
 
-    function addComponent(type) {
+    function addComponent(type, atX, atY) {
       if (previewMode) { toast('请先退出预览模式'); return; }
       var def = getDef(type);
       if (!def) return;
       var els = getElements();
-      var el = { id: uid('el'), type: type, props: Object.assign({}, def.defaults), scale: 1 };
+      var isIcon = def.category === 'icons' || type === 'float-btn';
+      var el = {
+        id: uid('el'),
+        type: type,
+        props: JSON.parse(JSON.stringify(def.defaults)),
+        scale: 1,
+        layout: isIcon ? 'free' : 'flow',
+        x: typeof atX === 'number' ? atX : (isIcon ? 40 + (els.length % 5) * 24 : 0),
+        y: typeof atY === 'number' ? atY : (isIcon ? 80 + Math.floor(els.length / 5) * 24 : 0),
+        pin: (type === 'nav-bottom' || type === 'buy-bar') ? 'bottom' : (type === 'nav-top' || type === 'nav-back' ? 'top' : '')
+      };
       els.push(el);
       setElements(els);
       selectedId = el.id;
@@ -1309,7 +1530,7 @@
       renderCanvas();
       renderProps();
       showSheetProps();
-      toast('已添加');
+      toast(isIcon ? '已添加（可拖动位置）' : '已添加');
     }
     function onDragStart(e, type) {
       dragType = type;
@@ -1326,28 +1547,69 @@
         zone.classList.remove('drag-over');
         if (previewMode) return;
         var type = e.dataTransfer.getData('text/plain') || dragType;
-        if (type) addComponent(type);
+        if (type) {
+          var rect = zone.getBoundingClientRect();
+          var x = e.clientX - rect.left + zone.scrollLeft;
+          var y = e.clientY - rect.top + zone.scrollTop;
+          addComponent(type, Math.max(0, x - 20), Math.max(0, y - 20));
+        }
         dragType = null;
       });
     }
 
     // ========== 画布渲染 ==========
+    function elStyle(el) {
+      var sc = (el.scale != null ? el.scale : 1);
+      var st = 'transform:scale('+sc+');transform-origin:top left;';
+      if (el.layout === 'free' && !el.pin) {
+        st += 'position:absolute;left:'+(el.x||0)+'px;top:'+(el.y||0)+'px;';
+      }
+      return st;
+    }
+    function elClass(el) {
+      var c = 'canvas-el';
+      if (el.id === selectedId) c += ' selected';
+      if (el.layout === 'free' && !el.pin) c += ' layout-free';
+      if (el.pin === 'top') c += ' pin-top';
+      if (el.pin === 'bottom') c += ' pin-bottom';
+      return c;
+    }
+    function renderOneEl(el, ctx, editable) {
+      var def = getDef(el.type);
+      if (!def) return '';
+      var sc = (el.scale != null ? el.scale : 1);
+      if (!editable) {
+        return '<div class="'+elClass(el)+'" data-id="'+el.id+'" style="'+elStyle(el)+'">'+def.render(el.props, ctx)+'</div>';
+      }
+      var linkLabel = getLinkLabel(el);
+      var badges = '';
+      if (el.layout === 'free') badges += '<span class="free-badge">自由</span>';
+      if (el.pin) badges += '<span class="pin-badge">固定'+(el.pin==='top'?'顶':'底')+'</span>';
+      return '<div class="'+elClass(el)+'" data-id="'+el.id+'" onclick="selectEl(\''+el.id+'\',event)" style="'+elStyle(el)+'">'+
+        '<div class="el-actions">'+
+          '<button type="button" onclick="moveEl(\''+el.id+'\',-1,event)" title="上移">↑</button>'+
+          '<button type="button" onclick="moveEl(\''+el.id+'\',1,event)" title="下移">↓</button>'+
+          '<button type="button" class="btn-del" onclick="removeEl(\''+el.id+'\',event)">×</button>'+
+        '</div>'+
+        badges+
+        (linkLabel ? '<span class="link-badge">→ '+esc(linkLabel)+'</span>' : '')+
+        '<span class="resize-handle tl" data-resize="'+el.id+'"></span>'+
+        '<span class="resize-handle tr" data-resize="'+el.id+'"></span>'+
+        '<span class="resize-handle bl" data-resize="'+el.id+'"></span>'+
+        '<span class="resize-handle br" data-resize="'+el.id+'"></span>'+
+        '<span class="scale-tag">'+Math.round(sc*100)+'%</span>'+
+        def.render(el.props, ctx)+'</div>';
+    }
+
     function renderCanvas() {
       var zone = document.getElementById('dropZone');
       var els = getElements();
       var ctx = { preview: previewMode, selectedSlot: selectedSlot };
 
-      // 搜索过滤（仅预览）
-      var filtered = els;
+      var list = els;
       if (previewMode && searchFilter) {
-        filtered = els.filter(function(el) {
-          if (el.type !== 'product-card' && el.type !== 'product-list') return true;
-          var name = (el.props.name || '').toLowerCase();
-          return name.indexOf(searchFilter.toLowerCase()) >= 0;
-        });
-        // 始终显示非商品组件
-        filtered = els.filter(function(el) {
-          if (el.type === 'product-card' || el.type === 'product-list') {
+        list = els.filter(function(el) {
+          if (el.type === 'product-card' || el.type === 'product-list' || el.type === 'product-grid') {
             var name = (el.props.name || '').toLowerCase();
             return !searchFilter || name.indexOf(searchFilter.toLowerCase()) >= 0;
           }
@@ -1356,39 +1618,41 @@
       }
 
       if (!els.length) {
-        zone.innerHTML = '<div class="empty-hint"><div style="font-size:28px;opacity:.35;">↓</div><div>拖入组件到这里</div></div>';
+        zone.innerHTML = '<div class="empty-hint"><div style="font-size:28px;opacity:.35;">↓</div><div>拖入组件到这里</div><div style="font-size:11px;opacity:.7;">图标支持自由拖放位置</div></div>';
         return;
       }
 
-      if (previewMode) {
-        zone.innerHTML = filtered.map(function(el) {
-          var def = getDef(el.type);
-          if (!def) return '';
-          var sc = (el.scale != null ? el.scale : 1);
-          return '<div class="canvas-el" data-id="'+el.id+'" style="transform:scale('+sc+');transform-origin:top center;">'+def.render(el.props, ctx)+'</div>';
-        }).join('');
-        bindPreviewEvents(zone);
-      } else {
-        zone.innerHTML = els.map(function(el) {
-          var def = getDef(el.type);
-          if (!def) return '';
-          var linkLabel = getLinkLabel(el);
-          var sc = (el.scale != null ? el.scale : 1);
-          return '<div class="canvas-el '+(el.id===selectedId?'selected':'')+'" data-id="'+el.id+'" onclick="selectEl(\''+el.id+'\',event)" style="transform:scale('+sc+');transform-origin:top center;">'+
-            '<div class="el-actions">'+
-              '<button type="button" onclick="moveEl(\''+el.id+'\',-1,event)">↑</button>'+
-              '<button type="button" onclick="moveEl(\''+el.id+'\',1,event)">↓</button>'+
-              '<button type="button" class="btn-del" onclick="removeEl(\''+el.id+'\',event)">×</button>'+
-            '</div>'+
-            (linkLabel ? '<span class="link-badge">→ '+esc(linkLabel)+'</span>' : '')+
-            '<span class="resize-handle tl" data-resize="'+el.id+'"></span>'+
-            '<span class="resize-handle tr" data-resize="'+el.id+'"></span>'+
-            '<span class="resize-handle bl" data-resize="'+el.id+'"></span>'+
-            '<span class="resize-handle br" data-resize="'+el.id+'"></span>'+
-            '<span class="scale-tag">'+Math.round(sc*100)+'%</span>'+
-            def.render(el.props, ctx)+'</div>';
-        }).join('');
+      // 分层：顶固定 / 流式+自由 / 底固定
+      var top = [], mid = [], bot = [];
+      for (var i=0;i<list.length;i++) {
+        var el = list[i];
+        if (el.pin === 'top') top.push(el);
+        else if (el.pin === 'bottom') bot.push(el);
+        else mid.push(el);
+      }
+
+      var editable = !previewMode;
+      var html = '';
+      if (top.length) {
+        html += '<div class="pin-layer top">'+top.map(function(el){ return renderOneEl(el, ctx, editable); }).join('')+'</div>';
+      }
+      // mid needs min height so free items show
+      var freeMaxY = 400;
+      mid.forEach(function(el) {
+        if (el.layout === 'free') freeMaxY = Math.max(freeMaxY, (el.y||0) + 80);
+      });
+      html += '<div class="canvas-mid" style="position:relative;min-height:'+freeMaxY+'px;padding-top:'+(top.length?0:0)+'px;padding-bottom:'+(bot.length?56:0)+'px;">';
+      html += mid.map(function(el){ return renderOneEl(el, ctx, editable); }).join('');
+      html += '</div>';
+      if (bot.length) {
+        html += '<div class="pin-layer bottom">'+bot.map(function(el){ return renderOneEl(el, ctx, editable); }).join('')+'</div>';
+      }
+
+      zone.innerHTML = html;
+      if (previewMode) bindPreviewEvents(zone);
+      else {
         bindResizeHandles();
+        bindFreeDrag();
       }
     }
 
@@ -1540,6 +1804,105 @@
         var tag = node.querySelector('.scale-tag');
         if (tag) tag.textContent = Math.round(scale*100)+'%';
       }
+    }
+
+
+
+    var movingId = null;
+    var moveOffX = 0, moveOffY = 0;
+
+    function bindFreeDrag() {
+      var nodes = document.querySelectorAll('.canvas-el.layout-free');
+      for (var i=0;i<nodes.length;i++) {
+        nodes[i].addEventListener('pointerdown', onFreePointerDown);
+      }
+    }
+    function onFreePointerDown(e) {
+      if (previewMode) return;
+      if (e.target.closest && (e.target.closest('.resize-handle') || e.target.closest('.el-actions'))) return;
+      var node = e.currentTarget;
+      var id = node.getAttribute('data-id');
+      var el = null;
+      var els = getElements();
+      for (var i=0;i<els.length;i++) if (els[i].id === id) { el = els[i]; break; }
+      if (!el || el.layout !== 'free' || el.pin) return;
+      movingId = id;
+      selectedId = id;
+      var rect = node.getBoundingClientRect();
+      moveOffX = e.clientX - rect.left;
+      moveOffY = e.clientY - rect.top;
+      try { node.setPointerCapture(e.pointerId); } catch(err) {}
+      document.addEventListener('pointermove', onFreePointerMove);
+      document.addEventListener('pointerup', onFreePointerUp);
+      document.addEventListener('pointercancel', onFreePointerUp);
+      e.preventDefault();
+    }
+    function onFreePointerMove(e) {
+      if (!movingId) return;
+      var zone = document.getElementById('dropZone');
+      var rect = zone.getBoundingClientRect();
+      var x = e.clientX - rect.left + zone.scrollLeft - moveOffX;
+      var y = e.clientY - rect.top + zone.scrollTop - moveOffY;
+      if (x < 0) x = 0;
+      if (y < 0) y = 0;
+      var maxX = zone.clientWidth - 40;
+      if (x > maxX) x = maxX;
+      setElementPos(movingId, Math.round(x), Math.round(y));
+    }
+    function onFreePointerUp() {
+      movingId = null;
+      document.removeEventListener('pointermove', onFreePointerMove);
+      document.removeEventListener('pointerup', onFreePointerUp);
+      document.removeEventListener('pointercancel', onFreePointerUp);
+      renderProps();
+    }
+    function setElementPos(id, x, y) {
+      var els = getElements();
+      for (var i=0;i<els.length;i++) {
+        if (els[i].id === id) {
+          els[i].x = x;
+          els[i].y = y;
+          els[i].layout = 'free';
+          break;
+        }
+      }
+      var node = document.querySelector('.canvas-el[data-id="'+id+'"]');
+      if (node) {
+        node.style.left = x + 'px';
+        node.style.top = y + 'px';
+        node.style.position = 'absolute';
+      }
+    }
+    function setElementLayout(layout) {
+      var els = getElements();
+      for (var i=0;i<els.length;i++) {
+        if (els[i].id === selectedId) {
+          els[i].layout = layout;
+          if (layout === 'free' && els[i].x == null) {
+            els[i].x = 20;
+            els[i].y = 100;
+          }
+          if (layout === 'flow') {
+            // keep x,y but unused
+          }
+          break;
+        }
+      }
+      renderCanvas();
+      renderProps();
+    }
+    function setElementPin(pin) {
+      var els = getElements();
+      for (var i=0;i<els.length;i++) {
+        if (els[i].id === selectedId) {
+          els[i].pin = pin || '';
+          if (pin) els[i].layout = 'flow';
+          break;
+        }
+      }
+      renderCanvas();
+      renderProps();
+      toast(pin ? ('已固定到屏幕' + (pin==='top'?'顶部':'底部')) : '已取消固定');
     }
 
 
@@ -1706,6 +2069,19 @@
       html += '<input type="range" min="40" max="250" value="'+Math.round(sc*100)+'" oninput="setElementScale(selectedId, this.value/100);var t=this.nextElementSibling;if(t)t.textContent=this.value+\'%\';" style="width:100%;">';
       html += '<div style="font-size:12px;color:var(--muted);margin-top:4px;">'+Math.round(sc*100)+'%</div></div>';
 
+      var layout = el.layout || 'flow';
+      var pin = el.pin || '';
+      html += '<div class="prop-group"><label>放置方式</label><div style="display:flex;gap:6px;flex-wrap:wrap;">';
+      html += '<button type="button" class="'+(layout==='flow'&&!pin?'btn-primary':'btn-secondary')+'" style="padding:6px 10px;font-size:12px;" onclick="setElementPin(\'\');setElementLayout(\'flow\')">顺序排列</button>';
+      html += '<button type="button" class="'+(layout==='free'&&!pin?'btn-primary':'btn-secondary')+'" style="padding:6px 10px;font-size:12px;" onclick="setElementPin(\'\');setElementLayout(\'free\')">自由拖放</button>';
+      html += '</div></div>';
+      html += '<div class="prop-group"><label>固定在屏幕</label><div style="display:flex;gap:6px;flex-wrap:wrap;">';
+      html += '<button type="button" class="'+(!pin?'btn-primary':'btn-secondary')+'" style="padding:6px 10px;font-size:12px;" onclick="setElementPin(\'\')">不固定</button>';
+      html += '<button type="button" class="'+(pin==='top'?'btn-primary':'btn-secondary')+'" style="padding:6px 10px;font-size:12px;" onclick="setElementPin(\'top\')">固定顶部</button>';
+      html += '<button type="button" class="'+(pin==='bottom'?'btn-primary':'btn-secondary')+'" style="padding:6px 10px;font-size:12px;" onclick="setElementPin(\'bottom\')">固定底部</button>';
+      html += '</div><p style="font-size:11px;color:var(--muted);margin-top:6px;">自由拖放：按住组件移动；固定后贴在手机屏顶/底</p></div>';
+
+
       if (el.type === 'nav-top' || el.type === 'nav-bottom' || el.type === 'nav-back') {
         html += '<div class="prop-group"><label>背景色</label><div class="color-row"><input type="color" value="'+toHex(props.bgColor||'#ffffff')+'" oninput="updateProp(\'bgColor\',this.value)"></div></div>';
         if (props.textColor != null) {
@@ -1753,6 +2129,12 @@
         'btn-cart': ['linkPageId'],
         'btn-outline': ['linkPageId'],
         'banner': ['linkPageId'],
+        'buy-bar': ['cartPage','buyPage'],
+        'coupon-bar': ['linkPageId'],
+        'notice-bar': ['linkPageId'],
+        'image-block': ['linkPageId'],
+        'float-btn': ['linkPageId'],
+        'address-bar': ['linkPageId'],
         'product-card': ['linkPageId'],
         'product-list': ['linkPageId'],
         'icon-cart': ['linkPageId'],
@@ -1832,7 +2214,12 @@
           var def = getDef(el.type);
           var sc = (el.scale != null ? el.scale : 1);
           var inner = def ? def.render(el.props, { preview: true }) : '';
-          return sc !== 1 ? '<div style="transform:scale('+sc+');transform-origin:top center;">'+inner+'</div>' : inner;
+          var st = '';
+          if (el.pin === 'top') st = 'position:sticky;top:0;z-index:50;';
+          else if (el.pin === 'bottom') st = 'position:sticky;bottom:0;z-index:50;';
+          else if (el.layout === 'free') st = 'position:absolute;left:'+(el.x||0)+'px;top:'+(el.y||0)+'px;';
+          if (sc !== 1) st += 'transform:scale('+sc+');transform-origin:top left;';
+          return st ? '<div style="'+st+'">'+inner+'</div>' : inner;
         }).join('\n');
         return { id: pg.id, name: pg.name, html: body };
       });
@@ -1842,7 +2229,7 @@
         return '<div class="page" id="page_'+p.id+'" style="'+(i===0?'':'display:none;')+'">'+p.html+'</div>';
       }).join('\n');
 
-      return '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">\n<title>'+esc(title)+'</title>\n<style>\n*{margin:0;padding:0;box-sizing:border-box;}\nbody{font-family:system-ui,-apple-system,sans-serif;background:#f5f5f5;color:#111;max-width:430px;margin:0 auto;min-height:100vh;}\n.preview-search-input{flex:1;border:none;background:transparent;outline:none;font-size:14px;color:#111;}\n</style>\n</head>\n<body>\n'+pagesHtml+'\n<script>\n'+
+      return '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">\n<title>'+esc(title)+'</title>\n<style>\n*{margin:0;padding:0;box-sizing:border-box;}\nbody{font-family:system-ui,-apple-system,sans-serif;background:#f5f5f5;color:#111;max-width:430px;margin:0 auto;min-height:100vh;position:relative;}\n.preview-search-input{flex:1;border:none;background:transparent;outline:none;font-size:14px;color:#111;}\n</style>\n</head>\n<body>\n'+pagesHtml+'\n<script>\n'+
         'var pages='+pagesJson+';\n'+
         'function goPage(id){\n'+
         '  if(!id)return;\n'+
