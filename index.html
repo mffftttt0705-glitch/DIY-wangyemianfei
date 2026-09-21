@@ -635,6 +635,49 @@
     }
     .canvas-el.selected .pin-badge { display: block; }
 
+
+    /* 选中效果：底线 / 描边 */
+    .sel-effect {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 6px 8px;
+      cursor: pointer;
+      box-sizing: border-box;
+      border: 2px solid transparent;
+      border-radius: 8px;
+    }
+    .sel-effect.fx-stroke {
+      border-color: currentColor;
+      border-width: 2.5px;
+    }
+    .sel-effect.fx-underline {
+      border-bottom: 3px solid currentColor;
+      border-radius: 8px 8px 0 0;
+    }
+    .sel-effect.fx-color { font-weight: 600; }
+    .tab-fx {
+      position: relative;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+    .tab-fx.fx-underline::after {
+      content: '';
+      position: absolute;
+      left: 20%; right: 20%; bottom: 0;
+      height: 3px;
+      background: currentColor;
+      border-radius: 2px;
+    }
+    .tab-fx.fx-stroke {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+      border-radius: 8px;
+    }
+
   </style>
 </head>
 <body>
@@ -845,80 +888,84 @@
     function iconS(svg, size) {
       return svg.replace(/width="24"/g, 'width="'+size+'"').replace(/height="24"/g, 'height="'+size+'"');
     }
+    function renderIconWithEffect(p, iconKey) {
+      var key = iconKey || p.icon || 'home';
+      var svg = ICONS[key] || ICONS.home;
+      var size = p.size || 24;
+      var isOn = !!p.isActive;
+      var color = (isOn && p.effectColor !== false) ? (p.activeColor || '#3b82f6') : (p.color || '#374151');
+      var cls = 'sel-effect';
+      if (isOn && p.effectUnderline) cls += ' fx-underline';
+      if (isOn && p.effectStroke) cls += ' fx-stroke';
+      if (isOn && p.effectColor !== false) cls += ' fx-color';
+      return '<span class="'+cls+'" data-role="tap" data-page="'+esc(p.linkPageId||'')+'" style="color:'+color+';">'+iconS(svg, size)+'</span>';
+    }
+    function defaultIconProps(color, iconKey) {
+      return {
+        icon: iconKey || '',
+        color: color || '#374151', size: 24, linkPageId: '',
+        isActive: false, activeColor: '#3b82f6',
+        effectColor: true, effectUnderline: false, effectStroke: false
+      };
+    }
 
     // ========== 组件定义（默认无多余字样） ==========
     var COMPONENT_DEFS = [
+
       { type: 'icon-cart', name: '购物车', category: 'icons',
-        defaults: { color: '#374151', size: 24, linkPageId: '' },
-        render: function(p, ctx) {
-          return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.cart,p.size)+'</span>';
-        }},
+        defaults: defaultIconProps('#374151','cart'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'cart'); }},
       { type: 'icon-heart', name: '收藏', category: 'icons',
-        defaults: { color: '#ef4444', size: 24, linkPageId: '' },
-        render: function(p) {
-          return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.heart,p.size)+'</span>';
-        }},
+        defaults: defaultIconProps('#ef4444','heart'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'heart'); }},
       { type: 'icon-search', name: '搜索图标', category: 'icons',
-        defaults: { color: '#6b7280', size: 24, linkPageId: '' },
-        render: function(p) {
-          return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.search,p.size)+'</span>';
-        }},
+        defaults: defaultIconProps('#6b7280','search'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'search'); }},
       { type: 'icon-user', name: '用户', category: 'icons',
-        defaults: { color: '#374151', size: 24, linkPageId: '' },
-        render: function(p) {
-          return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.user,p.size)+'</span>';
-        }},
+        defaults: defaultIconProps('#374151','user'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'user'); }},
       { type: 'icon-home', name: '首页图标', category: 'icons',
-        defaults: { color: '#3b82f6', size: 24, linkPageId: '' },
-        render: function(p) {
-          return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.home,p.size)+'</span>';
-        }},
+        defaults: defaultIconProps('#3b82f6','home'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'home'); }},
       { type: 'icon-grid', name: '分类图标', category: 'icons',
-        defaults: { color: '#374151', size: 24, linkPageId: '' },
-        render: function(p) {
-          return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.grid,p.size)+'</span>';
-        }},
-
+        defaults: defaultIconProps('#374151','grid'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'grid'); }},
       { type: 'icon-share', name: '分享', category: 'icons',
-        defaults: { color: '#374151', size: 24, linkPageId: '' },
-        render: function(p) { return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.share,p.size)+'</span>'; }},
+        defaults: defaultIconProps('#374151','share'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'share'); }},
       { type: 'icon-msg', name: '消息', category: 'icons',
-        defaults: { color: '#3b82f6', size: 24, linkPageId: '' },
-        render: function(p) { return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.msg,p.size)+'</span>'; }},
+        defaults: defaultIconProps('#3b82f6','msg'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'msg'); }},
       { type: 'icon-loc', name: '定位', category: 'icons',
-        defaults: { color: '#ef4444', size: 24, linkPageId: '' },
-        render: function(p) { return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.loc,p.size)+'</span>'; }},
+        defaults: defaultIconProps('#ef4444','loc'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'loc'); }},
       { type: 'icon-bell', name: '通知', category: 'icons',
-        defaults: { color: '#f59e0b', size: 24, linkPageId: '' },
-        render: function(p) { return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.bell,p.size)+'</span>'; }},
+        defaults: defaultIconProps('#f59e0b','bell'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'bell'); }},
       { type: 'icon-bag', name: '购物袋', category: 'icons',
-        defaults: { color: '#374151', size: 24, linkPageId: '' },
-        render: function(p) { return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.bag,p.size)+'</span>'; }},
+        defaults: defaultIconProps('#374151','bag'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'bag'); }},
       { type: 'icon-gift', name: '礼盒', category: 'icons',
-        defaults: { color: '#ec4899', size: 24, linkPageId: '' },
-        render: function(p) { return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.gift,p.size)+'</span>'; }},
+        defaults: defaultIconProps('#ec4899','gift'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'gift'); }},
       { type: 'icon-camera', name: '相机', category: 'icons',
-        defaults: { color: '#6b7280', size: 24, linkPageId: '' },
-        render: function(p) { return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.camera,p.size)+'</span>'; }},
+        defaults: defaultIconProps('#6b7280','camera'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'camera'); }},
       { type: 'icon-filter', name: '筛选', category: 'icons',
-        defaults: { color: '#374151', size: 24, linkPageId: '' },
-        render: function(p) { return '<span data-role="tap" style="display:inline-flex;color:'+p.color+';padding:8px;cursor:pointer;">'+iconS(ICONS.filter,p.size)+'</span>'; }},
-      { type: 'btn-success', name: '成功按钮', category: 'btn',
-        defaults: { text: '确认', bgColor: '#16a34a', textColor: '#ffffff', radius: 8, height: 44, linkPageId: '' },
-        render: function(p) {
-          return '<div style="padding:8px 16px;"><button data-role="tap" data-page="'+esc(p.linkPageId)+'" style="width:100%;height:'+p.height+'px;background:'+p.bgColor+';color:'+p.textColor+';border:none;border-radius:'+p.radius+'px;font-size:15px;font-weight:600;cursor:pointer;font-family:system-ui,sans-serif;">'+esc(p.text)+'</button></div>';
-        }},
-      { type: 'btn-dark', name: '深色按钮', category: 'btn',
-        defaults: { text: '提交订单', bgColor: '#111827', textColor: '#ffffff', radius: 8, height: 44, linkPageId: '' },
-        render: function(p) {
-          return '<div style="padding:8px 16px;"><button data-role="tap" data-page="'+esc(p.linkPageId)+'" style="width:100%;height:'+p.height+'px;background:'+p.bgColor+';color:'+p.textColor+';border:none;border-radius:'+p.radius+'px;font-size:15px;font-weight:600;cursor:pointer;font-family:system-ui,sans-serif;">'+esc(p.text)+'</button></div>';
-        }},
-      { type: 'btn-text', name: '文字按钮', category: 'btn',
-        defaults: { text: '查看更多', textColor: '#3b82f6', height: 36, linkPageId: '' },
-        render: function(p) {
-          return '<div style="padding:4px 16px;text-align:center;"><button data-role="tap" data-page="'+esc(p.linkPageId)+'" style="background:transparent;color:'+p.textColor+';border:none;height:'+p.height+'px;font-size:14px;cursor:pointer;font-family:system-ui,sans-serif;">'+esc(p.text)+'</button></div>';
-        }},
-
+        defaults: defaultIconProps('#374151','filter'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'filter'); }},
+      { type: 'icon-star', name: '星标', category: 'icons',
+        defaults: defaultIconProps('#f59e0b','star'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'star'); }},
+      { type: 'icon-check', name: '勾选', category: 'icons',
+        defaults: defaultIconProps('#22c55e','check'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'check'); }},
+      { type: 'icon-plus', name: '加号', category: 'icons',
+        defaults: defaultIconProps('#3b82f6','plus'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'plus'); }},
+      { type: 'icon-custom', name: '任意图标', category: 'icons',
+        defaults: defaultIconProps('#374151','home'),
+        render: function(p) { return renderIconWithEffect(p, p.icon||'home'); }},
 
       { type: 'nav-top', name: '顶部导航', category: 'nav',
         defaults: {
@@ -952,6 +999,8 @@
       { type: 'nav-bottom', name: '底部导航', category: 'nav',
         defaults: {
           bgColor: '#ffffff', activeColor: '#3b82f6', inactiveColor: '#9ca3af', height: 56,
+          activeIndex: 0,
+          effectColor: true, effectUnderline: true, effectStroke: false,
           items: [
             { kind: 'icon', icon: 'home', text: '首页', page: '' },
             { kind: 'icon', icon: 'grid', text: '分类', page: '' },
@@ -961,12 +1010,17 @@
         },
         render: function(p) {
           var items = p.items || [];
+          var activeIndex = parseInt(p.activeIndex,10); if (isNaN(activeIndex)) activeIndex = 0;
           var html = '';
           for (var i=0;i<items.length;i++) {
             var it = items[i];
-            var c = i===0 ? p.activeColor : p.inactiveColor;
+            var on = i === activeIndex;
+            var c = on && p.effectColor !== false ? p.activeColor : p.inactiveColor;
             var ic = (it.icon && ICONS[it.icon]) ? iconS(ICONS[it.icon],20) : '';
-            html += '<a href="javascript:void(0)" data-role="link" data-page="'+esc(it.page||'')+'" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:'+c+';font-size:10px;height:100%;padding:4px 2px;">'+
+            var cls = 'tab-fx';
+            if (on && p.effectUnderline) cls += ' fx-underline';
+            if (on && p.effectStroke) cls += ' fx-stroke';
+            html += '<a href="javascript:void(0)" class="'+cls+'" data-role="link" data-page="'+esc(it.page||'')+'" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:'+c+';font-size:10px;height:100%;padding:6px 2px;box-sizing:border-box;">'+
               ic+'<span style="max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(it.text||'')+'</span></a>';
           }
           return '<nav style="display:flex;background:'+p.bgColor+';border-top:1px solid #eee;height:'+(p.height||56)+'px;font-family:system-ui,sans-serif;">'+html+'</nav>';
@@ -1118,14 +1172,19 @@
           return '<div data-role="tap" data-page="'+esc(p.linkPageId)+'" style="padding:8px 14px;background:'+p.bgColor+';color:'+p.textColor+';font-size:12px;font-family:system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;">📢 '+esc(p.text)+'</div>';
         }},
       { type: 'filter-tabs', name: '筛选标签', category: 'ecom',
-        defaults: { tabs: '综合,销量,价格,筛选', activeColor: '#ef4444', textColor: '#6b7280' },
+        defaults: { tabs: '综合,销量,价格,筛选', activeColor: '#ef4444', textColor: '#6b7280', activeIndex: 0, effectColor: true, effectUnderline: true, effectStroke: false },
         render: function(p) {
           var list = String(p.tabs||'').split(/[,，]/).filter(Boolean);
-          var h = '<div style="display:flex;padding:8px 8px;background:#fff;border-bottom:1px solid #f3f4f6;font-family:system-ui,sans-serif;">';
+          var activeIndex = parseInt(p.activeIndex,10); if (isNaN(activeIndex)) activeIndex = 0;
+          var h = '<div style="display:flex;padding:4px 8px;background:#fff;border-bottom:1px solid #f3f4f6;font-family:system-ui,sans-serif;">';
           for (var i=0;i<list.length;i++) {
-            var c = i===0 ? p.activeColor : p.textColor;
-            var w = i===0 ? '700' : '400';
-            h += '<div style="flex:1;text-align:center;font-size:13px;color:'+c+';font-weight:'+w+';">'+esc(list[i])+'</div>';
+            var on = i === activeIndex;
+            var c = on && p.effectColor !== false ? p.activeColor : p.textColor;
+            var w = on ? '700' : '400';
+            var cls = 'tab-fx';
+            if (on && p.effectUnderline) cls += ' fx-underline';
+            if (on && p.effectStroke) cls += ' fx-stroke';
+            h += '<div class="'+cls+'" style="flex:1;text-align:center;font-size:13px;color:'+c+';font-weight:'+w+';padding:10px 4px;">'+esc(list[i])+'</div>';
           }
           return h + '</div>';
         }},
@@ -1224,13 +1283,18 @@
           return '<div style="height:1px;background:'+p.color+';margin:'+p.margin+'px 14px;"></div>';
         }},
       { type: 'detail-tabs', name: '详情页签', category: 'ecom',
-        defaults: { tabs: '商品,评价,详情', activeColor: '#ef4444' },
+        defaults: { tabs: '商品,评价,详情', activeColor: '#ef4444', activeIndex: 0, effectColor: true, effectUnderline: true, effectStroke: false },
         render: function(p) {
           var list = String(p.tabs||'').split(/[,，]/).filter(Boolean);
+          var activeIndex = parseInt(p.activeIndex,10); if (isNaN(activeIndex)) activeIndex = 0;
           var h = '<div style="display:flex;background:#fff;border-bottom:1px solid #f3f4f6;font-family:system-ui,sans-serif;">';
           for (var i=0;i<list.length;i++) {
-            var c = i===0 ? p.activeColor : '#6b7280';
-            h += '<div style="flex:1;text-align:center;padding:12px 0;font-size:14px;color:'+c+';font-weight:'+(i===0?600:400)+';border-bottom:2px solid '+(i===0?p.activeColor:'transparent')+';">'+esc(list[i])+'</div>';
+            var on = i === activeIndex;
+            var c = on && p.effectColor !== false ? p.activeColor : '#6b7280';
+            var cls = 'tab-fx';
+            if (on && p.effectUnderline) cls += ' fx-underline';
+            if (on && p.effectStroke) cls += ' fx-stroke';
+            h += '<div class="'+cls+'" style="flex:1;text-align:center;padding:12px 0;font-size:14px;color:'+c+';font-weight:'+(on?600:400)+';">'+esc(list[i])+'</div>';
           }
           return h + '</div>';
         }},
@@ -2045,6 +2109,33 @@
       renderProps();
     }
 
+
+    function renderSelectionEffectProps(props, isIcon) {
+      var h = '<div class="prop-group" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px;"><label style="font-weight:600;color:#e2e8f0;">选中效果</label>';
+      if (isIcon) {
+        h += '<div style="margin-top:8px;"><label style="font-size:11px;color:var(--muted);">换成任意图标</label>';
+        h += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">';
+        var keys = ICON_PICK_KEYS || [];
+        for (var i=0;i<keys.length;i++) {
+          var k = keys[i];
+          if (!ICONS[k]) continue;
+          var act = (props.icon===k || (!props.icon && false)) ? 'border-color:#3b82f6;background:#1e3a5f;' : '';
+          h += '<button type="button" style="width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:#1e293b;color:#e2e8f0;display:flex;align-items:center;justify-content:center;padding:0;'+act+'" onclick="updateProp(\'icon\',\''+k+'\')">'+iconS(ICONS[k],18)+'</button>';
+        }
+        h += '</div></div>';
+        h += '<div class="prop-group"><label>模拟选中状态</label><select onchange="updateProp(\'isActive\', this.value===\'1\')"><option value="0"'+(props.isActive?'':' selected')+'>未选中</option><option value="1"'+(props.isActive?' selected':'')+'>选中</option></select></div>';
+      } else {
+        h += '<div class="prop-group"><label>当前选中第几项（从 0 开始）</label><input type="number" min="0" value="'+(props.activeIndex!=null?props.activeIndex:0)+'" onchange="updateProp(\'activeIndex\', +this.value||0)"></div>';
+      }
+      h += '<div class="prop-group"><label>选中颜色</label><div class="color-row"><input type="color" value="'+toHex(props.activeColor||'#3b82f6')+'" oninput="updateProp(\'activeColor\', this.value)"><input type="text" value="'+esc(props.activeColor||'#3b82f6')+'" onchange="updateProp(\'activeColor\', this.value)" style="flex:1;"></div></div>';
+      h += '<div class="prop-group"><label>效果开关</label>';
+      h += '<label style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12px;color:var(--text);"><input type="checkbox" '+(props.effectColor!==false?'checked':'')+' onchange="updateProp(\'effectColor\', this.checked)"> 改颜色</label>';
+      h += '<label style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12px;color:var(--text);"><input type="checkbox" '+(props.effectUnderline?'checked':'')+' onchange="updateProp(\'effectUnderline\', this.checked)"> 底部划线</label>';
+      h += '<label style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12px;color:var(--text);"><input type="checkbox" '+(props.effectStroke?'checked':'')+' onchange="updateProp(\'effectStroke\', this.checked)"> 描边变粗</label>';
+      h += '</div></div>';
+      return h;
+    }
+
     function renderProps() {
       var body = document.getElementById('propsBody');
       if (!body) return;
@@ -2081,6 +2172,20 @@
       html += '<button type="button" class="'+(pin==='bottom'?'btn-primary':'btn-secondary')+'" style="padding:6px 10px;font-size:12px;" onclick="setElementPin(\'bottom\')">固定底部</button>';
       html += '</div><p style="font-size:11px;color:var(--muted);margin-top:6px;">自由拖放：按住组件移动；固定后贴在手机屏顶/底</p></div>';
 
+
+      var isIconType = (el.type || '').indexOf('icon-') === 0;
+      if (isIconType) {
+        html += renderSelectionEffectProps(props, true);
+        // 基础颜色、大小、跳转
+        html += '<div class="prop-group"><label>默认颜色（未选中）</label><div class="color-row"><input type="color" value="'+toHex(props.color||'#374151')+'" oninput="updateProp(\'color\', this.value)"></div></div>';
+        html += '<div class="prop-group"><label>图标大小</label><input type="number" min="12" value="'+(props.size||24)+'" onchange="updateProp(\'size\', +this.value||24)"></div>';
+        html += '<div class="prop-group"><label>点击跳转页面</label>'+pageSelectHtml(props.linkPageId||'', "updateProp('linkPageId', this.value)")+'</div>';
+        body.innerHTML = html;
+        return;
+      }
+      if (el.type === 'nav-bottom' || el.type === 'filter-tabs' || el.type === 'detail-tabs') {
+        html += renderSelectionEffectProps(props, false);
+      }
 
       if (el.type === 'nav-top' || el.type === 'nav-bottom' || el.type === 'nav-back') {
         html += '<div class="prop-group"><label>背景色</label><div class="color-row"><input type="color" value="'+toHex(props.bgColor||'#ffffff')+'" oninput="updateProp(\'bgColor\',this.value)"></div></div>';
@@ -2178,7 +2283,7 @@
         }
       }
       renderCanvas();
-      if (/color|Color|Page|linkPage|Icon|icon|tab|menu|logo|right|title|text/i.test(key)) renderProps();
+      if (/color|Color|Page|linkPage|Icon|icon|tab|menu|logo|right|title|text|Active|effect|activeIndex/i.test(key)) renderProps();
     }
 
     // ========== 预览模式 ==========
