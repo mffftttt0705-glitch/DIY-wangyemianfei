@@ -65,7 +65,7 @@
     .btn-danger { background: var(--danger); color: #fff; }
 
     /* 编辑器 */
-    #editorView { display: none; height: 100vh; flex-direction: column; }
+    #editorView { display: none; height: 100vh; flex-direction: column; position: relative; }
     #editorView.show { display: flex; }
 
     .topbar {
@@ -486,54 +486,56 @@
 
     .bottom-sheet {
       position: absolute; left: 0; right: 0; bottom: 0;
-      height: 48vh; max-height: 60vh;
-      background: var(--panel); border-radius: 16px 16px 0 0;
+      height: 45vh;
+      max-height: 420px;
+      min-height: 200px;
+      background: var(--panel);
+      border-radius: 16px 16px 0 0;
       border-top: 1px solid var(--border);
       box-shadow: 0 -8px 32px rgba(0,0,0,.4);
-      display: flex; flex-direction: column; z-index: 30;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
       transition: transform .28s cubic-bezier(.4,0,.2,1);
-      touch-action: manipulation;
     }
-    .bottom-sheet.collapsed { transform: translateY(calc(100% - 40px)); }
+    .bottom-sheet.collapsed { transform: translateY(calc(100% - 44px)); }
     .sheet-handle {
-      flex-shrink: 0; height: 40px; display: flex; align-items: center;
-      justify-content: center; gap: 10px; cursor: pointer; position: relative;
-      user-select: none; -webkit-user-select: none; touch-action: manipulation;
+      height: 44px; flex: 0 0 44px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      cursor: pointer; position: relative; user-select: none;
+      border-bottom: 1px solid var(--border);
     }
     .sheet-bar { width: 40px; height: 4px; border-radius: 2px; background: #64748b; }
     .sheet-title { font-size: 12px; color: var(--muted); }
     .sheet-toggle {
       position: absolute; right: 12px; top: 8px; padding: 4px 10px;
       font-size: 11px; background: #334155; color: var(--text); border-radius: 6px;
-      touch-action: manipulation;
     }
-    .sheet-body {
-      flex: 1 1 auto; min-height: 0; height: 0;
-      overflow: hidden; display: flex; flex-direction: column;
-      touch-action: pan-y;
+    /* 可滚动区域：固定剩余高度，不靠 flex 猜高度 */
+    .sheet-scroll {
+      height: calc(45vh - 44px);
+      max-height: calc(420px - 44px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      padding: 10px 12px 28px;
     }
+    .bottom-sheet.collapsed .sheet-scroll { display: none; }
     .sheet-tabs {
-      display: flex; gap: 4px; padding: 8px 12px 0; flex-shrink: 0; flex-wrap: wrap;
-      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      display: flex; gap: 4px; padding: 0 0 10px; flex-wrap: wrap;
+      position: sticky; top: 0; background: var(--panel); z-index: 2; padding-top: 2px;
     }
     .sheet-tab {
       padding: 6px 14px; border-radius: 20px; font-size: 12px;
       background: transparent; color: var(--muted); border: none; cursor: pointer;
-      flex-shrink: 0; touch-action: manipulation;
     }
     .sheet-tab.active { background: var(--primary); color: #fff; }
-    .sheet-content {
-      flex: 1 1 auto; min-height: 0; height: 100%;
-      overflow-y: scroll !important; overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-      touch-action: pan-y;
-      padding: 10px 12px 24px;
-    }
-    .comp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding-bottom: 20px; }
+    .comp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
     @media (min-width: 600px) { .comp-grid { grid-template-columns: repeat(6, 1fr); } }
     @media (max-width: 480px) {
-      .bottom-sheet { height: 50vh; max-height: 70vh; }
+      .bottom-sheet { height: 50vh; max-height: none; }
+      .sheet-scroll { height: calc(50vh - 44px); max-height: none; }
       .comp-grid { grid-template-columns: repeat(3, 1fr); }
       .phone-frame { width: 300px; max-width: 88vw; }
     }
@@ -543,46 +545,58 @@
       flex: 1; min-height: 0; display: flex; flex-direction: column;
       background: #0b1220; position: relative; overflow: hidden;
     }
-    .stage-full .canvas-scroll { flex: 1; min-height: 0; overflow: auto; padding: 12px; display: flex; justify-content: center; -webkit-overflow-scrolling: touch; }
+    .stage-full .canvas-scroll {
+      flex: 1; min-height: 0; overflow: auto; padding: 12px;
+      display: flex; justify-content: center; -webkit-overflow-scrolling: touch;
+    }
     .phone-screen { height: min(560px, calc(100vh - 180px)) !important; }
-    .palette, .props-panel, .editor-body { display: none !important; }
+    .palette, .props-panel, .editor-body, .sheet-body, .sheet-content { display: none !important; }
 
-    /* Photoshop 风格选中 */
+    /* 美图式缩放手柄 */
+    .canvas-el {
+      position: relative;
+      outline: 2px solid transparent;
+      outline-offset: 2px;
+      transition: outline-color .1s;
+      cursor: pointer;
+      transform-origin: top center;
+    }
+    .canvas-el:hover { outline-color: rgba(59,130,246,.35); }
     .canvas-el.selected {
       outline: 2px solid #3b82f6 !important;
-      outline-offset: 1px;
-      box-shadow: 0 0 0 1px rgba(59,130,246,.35);
+      outline-offset: 2px;
     }
-    .nav-slot {
-      position: relative; border-radius: 6px; transition: box-shadow .12s, outline .12s;
+    .resize-handle {
+      position: absolute; width: 14px; height: 14px;
+      background: #fff; border: 2px solid #3b82f6; border-radius: 50%;
+      z-index: 20; display: none;
+      box-shadow: 0 1px 4px rgba(0,0,0,.25);
+      touch-action: none;
     }
-    .nav-slot.slot-selected {
-      outline: 2px solid #f59e0b !important;
-      outline-offset: 1px;
-      background: rgba(245,158,11,.12) !important;
-      z-index: 2;
+    .canvas-el.selected .resize-handle { display: block; }
+    .resize-handle.br { right: -7px; bottom: -7px; cursor: nwse-resize; }
+    .resize-handle.bl { left: -7px; bottom: -7px; cursor: nesw-resize; }
+    .resize-handle.tr { right: -7px; top: -7px; cursor: nesw-resize; }
+    .resize-handle.tl { left: -7px; top: -7px; cursor: nwse-resize; }
+    .scale-tag {
+      position: absolute; left: 50%; bottom: -22px; transform: translateX(-50%);
+      background: #3b82f6; color: #fff; font-size: 10px; padding: 1px 6px;
+      border-radius: 4px; display: none; white-space: nowrap; z-index: 21;
     }
-    .slot-card {
-      background: #0f172a; border: 1px solid var(--border); border-radius: 10px;
-      padding: 12px; margin-bottom: 10px;
+    .canvas-el.selected .scale-tag { display: block; }
+
+    .nav-item-row {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      background: #0f172a; border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px; margin-bottom: 8px;
     }
-    .slot-card.active-slot {
-      border-color: #f59e0b; box-shadow: 0 0 0 1px rgba(245,158,11,.4);
+    .nav-item-row select, .nav-item-row input[type=text] {
+      flex: 1; min-width: 80px; padding: 6px 8px; border-radius: 6px;
+      border: 1px solid var(--border); background: #1e293b; color: var(--text); font-size: 12px;
     }
-    .slot-card .slot-title {
-      font-size: 12px; font-weight: 600; color: #e2e8f0; margin-bottom: 8px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .icon-pick {
-      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;
-    }
-    .icon-pick-btn {
-      width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border);
-      background: #1e293b; color: #e2e8f0; display: flex; align-items: center;
-      justify-content: center; padding: 0; cursor: pointer;
-    }
-    .icon-pick-btn.active { border-color: var(--primary); background: #1e3a5f; color: #60a5fa; }
-    .icon-pick-btn svg { width: 18px; height: 18px; }
+    .nav-add-row { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+    .nav-add-row button { padding: 8px 12px; font-size: 12px; }
+
 
   </style>
 </head>
@@ -641,13 +655,13 @@
           <span class="sheet-title" id="sheetTitle">添加组件</span>
           <button class="sheet-toggle" type="button" id="sheetToggleBtn">收起</button>
         </div>
-        <div class="sheet-body">
+        <div class="sheet-scroll" id="sheetScroll">
           <div id="sheetComps">
             <div class="sheet-tabs" id="paletteTabs"></div>
-            <div class="sheet-content" id="paletteList"></div>
+            <div id="paletteList"></div>
           </div>
           <div id="sheetProps" style="display:none;">
-            <div class="sheet-content" id="propsBody"></div>
+            <div id="propsBody"></div>
           </div>
         </div>
       </div>
@@ -872,64 +886,69 @@
       { type: 'nav-top', name: '顶部导航', category: 'nav',
         defaults: {
           bgColor: '#ffffff', textColor: '#111827', height: 48,
-          logoText: 'Shop', logoPage: '',
-          menu1: '首页', menu1Icon: '', menu1Page: '',
-          menu2: '分类', menu2Icon: '', menu2Page: '',
-          right1Icon: 'search', right1Page: '',
-          right2Icon: 'cart', right2Page: ''
+          items: [
+            { kind: 'text', text: 'Shop', page: '' },
+            { kind: 'text', text: '首页', page: '' },
+            { kind: 'text', text: '分类', page: '' },
+            { kind: 'icon', icon: 'search', page: '' },
+            { kind: 'icon', icon: 'cart', page: '' }
+          ]
         },
-        render: function(p, ctx) {
-          var edit = ctx && !ctx.preview;
-          function slotCls(s){ return 'nav-slot'+(edit?'':'')+( (ctx&&ctx.selectedSlot===s)?' slot-selected':''); }
-          function slotAttr(s){ return edit ? ' data-slot="'+s+'" onclick="event.stopPropagation();selectSlot(\''+s+'\')" ' : ''; }
-          var logo = '<span class="'+slotCls('logo')+'"'+slotAttr('logo')+' data-role="link" data-page="'+esc(p.logoPage)+'" style="font-size:17px;font-weight:700;color:'+p.textColor+';padding:2px 4px;cursor:pointer;">'+esc(p.logoText)+'</span>';
-          function menu(n){
-            var label = p['menu'+n]||''; var page = p['menu'+n+'Page']||''; var ik = p['menu'+n+'Icon']||'';
-            var ic = (ik && ICONS[ik]) ? iconS(ICONS[ik],16)+' ' : '';
-            return '<a href="javascript:void(0)" class="'+slotCls('menu'+n)+'"'+slotAttr('menu'+n)+' data-role="link" data-page="'+esc(page)+'" style="color:'+p.textColor+';text-decoration:none;font-size:13px;opacity:.9;padding:2px 6px;display:inline-flex;align-items:center;gap:4px;">'+ic+esc(label)+'</a>';
+        render: function(p) {
+          var items = p.items || [];
+          var left = '', right = '';
+          for (var i=0;i<items.length;i++) {
+            var it = items[i];
+            var bit = '';
+            if (it.kind === 'icon' && ICONS[it.icon]) {
+              bit = '<span data-role="link" data-page="'+esc(it.page||'')+'" style="display:inline-flex;color:'+p.textColor+';padding:4px 6px;cursor:pointer;">'+iconS(ICONS[it.icon],18)+'</span>';
+              right += bit;
+            } else {
+              bit = '<span data-role="link" data-page="'+esc(it.page||'')+'" style="color:'+p.textColor+';font-size:'+(i===0?17:13)+'px;font-weight:'+(i===0?700:500)+';padding:4px 8px;cursor:pointer;text-decoration:none;">'+esc(it.text||'')+'</span>';
+              left += bit;
+            }
           }
-          function right(n){
-            var ik = p['right'+n+'Icon']||''; var page = p['right'+n+'Page']||'';
-            if(!ik || !ICONS[ik]) return '';
-            return '<span class="'+slotCls('right'+n)+'"'+slotAttr('right'+n)+' data-role="link" data-page="'+esc(page)+'" style="display:inline-flex;color:'+p.textColor+';padding:4px;cursor:pointer;position:relative;">'+iconS(ICONS[ik],18)+'</span>';
-          }
-          return '<nav data-role="nav-top" style="display:flex;align-items:center;justify-content:space-between;padding:0 10px;height:'+p.height+'px;background:'+p.bgColor+';border-bottom:1px solid #eee;font-family:system-ui,sans-serif;">'+
-            '<div style="display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;">'+logo+menu(1)+menu(2)+'</div>'+
-            '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">'+right(1)+right(2)+'</div></nav>';
+          return '<nav style="display:flex;align-items:center;justify-content:space-between;padding:0 8px;height:'+(p.height||48)+'px;background:'+p.bgColor+';border-bottom:1px solid #eee;font-family:system-ui,sans-serif;">'+
+            '<div style="display:flex;align-items:center;gap:2px;overflow:hidden;">'+left+'</div>'+
+            '<div style="display:flex;align-items:center;gap:2px;flex-shrink:0;">'+right+'</div></nav>';
         }},
       { type: 'nav-bottom', name: '底部导航', category: 'nav',
         defaults: {
           bgColor: '#ffffff', activeColor: '#3b82f6', inactiveColor: '#9ca3af', height: 56,
-          tab1: '首页', icon1: 'home', page1: '',
-          tab2: '分类', icon2: 'grid', page2: '',
-          tab3: '购物车', icon3: 'cart', page3: '',
-          tab4: '我的', icon4: 'user', page4: ''
+          items: [
+            { kind: 'icon', icon: 'home', text: '首页', page: '' },
+            { kind: 'icon', icon: 'grid', text: '分类', page: '' },
+            { kind: 'icon', icon: 'cart', text: '购物车', page: '' },
+            { kind: 'icon', icon: 'user', text: '我的', page: '' }
+          ]
         },
-        render: function(p, ctx) {
-          var edit = ctx && !ctx.preview;
-          function one(n, active){
-            var label = p['tab'+n]||''; var page = p['page'+n]||''; var ik = p['icon'+n]||'home';
-            var c = active ? p.activeColor : p.inactiveColor;
-            var ic = (ik && ICONS[ik]) ? iconS(ICONS[ik],20) : iconS(ICONS.home,20);
-            var cls = 'nav-slot'+( (ctx&&ctx.selectedSlot==='tab'+n)?' slot-selected':'');
-            var attr = edit ? ' data-slot="tab'+n+'" onclick="event.stopPropagation();selectSlot(\'tab'+n+'\')" ' : '';
-            return '<a href="javascript:void(0)" class="'+cls+'"'+attr+' data-role="link" data-page="'+esc(page)+'" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:'+c+';font-size:10px;height:100%;min-width:0;padding:4px 2px;">'+ic+'<span style="max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(label)+'</span></a>';
+        render: function(p) {
+          var items = p.items || [];
+          var html = '';
+          for (var i=0;i<items.length;i++) {
+            var it = items[i];
+            var c = i===0 ? p.activeColor : p.inactiveColor;
+            var ic = (it.icon && ICONS[it.icon]) ? iconS(ICONS[it.icon],20) : '';
+            html += '<a href="javascript:void(0)" data-role="link" data-page="'+esc(it.page||'')+'" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:'+c+';font-size:10px;height:100%;padding:4px 2px;">'+
+              ic+'<span style="max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(it.text||'')+'</span></a>';
           }
-          return '<nav data-role="nav-bottom" style="display:flex;background:'+p.bgColor+';border-top:1px solid #eee;height:'+p.height+'px;font-family:system-ui,sans-serif;">'+
-            one(1,true)+one(2,false)+one(3,false)+one(4,false)+'</nav>';
+          return '<nav style="display:flex;background:'+p.bgColor+';border-top:1px solid #eee;height:'+(p.height||56)+'px;font-family:system-ui,sans-serif;">'+html+'</nav>';
         }},
       { type: 'nav-back', name: '返回顶栏', category: 'nav',
-        defaults: { title: '', bgColor: '#ffffff', textColor: '#111827', backIcon: 'back', backPage: '', titlePage: '', height: 44 },
-        render: function(p, ctx) {
-          var edit = ctx && !ctx.preview;
-          var ik = p.backIcon || 'back';
-          var backCls = 'nav-slot'+( (ctx&&ctx.selectedSlot==='back')?' slot-selected':'');
-          var titleCls = 'nav-slot'+( (ctx&&ctx.selectedSlot==='title')?' slot-selected':'');
-          var backAttr = edit ? ' data-slot="back" onclick="event.stopPropagation();selectSlot(\'back\')" ' : '';
-          var titleAttr = edit ? ' data-slot="title" onclick="event.stopPropagation();selectSlot(\'title\')" ' : '';
-          return '<div style="display:flex;align-items:center;height:'+p.height+'px;padding:0 8px;background:'+p.bgColor+';border-bottom:1px solid #eee;font-family:system-ui,sans-serif;">'+
-            '<span class="'+backCls+'"'+backAttr+' data-role="link" data-page="'+esc(p.backPage)+'" style="display:flex;align-items:center;color:'+p.textColor+';cursor:pointer;padding:6px;">'+iconS(ICONS[ik]||ICONS.back,20)+'</span>'+
-            '<span class="'+titleCls+'"'+titleAttr+' data-role="link" data-page="'+esc(p.titlePage||'')+'" style="flex:1;text-align:center;font-size:15px;font-weight:600;color:'+p.textColor+';margin-right:28px;padding:4px;">'+esc(p.title)+'</span></div>';
+        defaults: {
+          bgColor: '#ffffff', textColor: '#111827', height: 44,
+          items: [
+            { kind: 'icon', icon: 'back', text: '', page: '' },
+            { kind: 'text', text: '', page: '' }
+          ]
+        },
+        render: function(p) {
+          var items = p.items || [];
+          var back = items[0] || { kind:'icon', icon:'back', page:'' };
+          var title = items[1] || { kind:'text', text:'', page:'' };
+          return '<div style="display:flex;align-items:center;height:'+(p.height||44)+'px;padding:0 8px;background:'+p.bgColor+';border-bottom:1px solid #eee;font-family:system-ui,sans-serif;">'+
+            '<span data-role="link" data-page="'+esc(back.page||'')+'" style="display:flex;align-items:center;color:'+p.textColor+';cursor:pointer;padding:6px;">'+iconS(ICONS[back.icon]||ICONS.back,20)+'</span>'+
+            '<span data-role="link" data-page="'+esc(title.page||'')+'" style="flex:1;text-align:center;font-size:15px;font-weight:600;color:'+p.textColor+';margin-right:28px;">'+esc(title.text||'')+'</span></div>';
         }},
 
       { type: 'btn-primary', name: '主按钮', category: 'btn',
@@ -1282,7 +1301,7 @@
       var def = getDef(type);
       if (!def) return;
       var els = getElements();
-      var el = { id: uid('el'), type: type, props: Object.assign({}, def.defaults) };
+      var el = { id: uid('el'), type: type, props: Object.assign({}, def.defaults), scale: 1 };
       els.push(el);
       setElements(els);
       selectedId = el.id;
@@ -1345,7 +1364,8 @@
         zone.innerHTML = filtered.map(function(el) {
           var def = getDef(el.type);
           if (!def) return '';
-          return '<div class="canvas-el" data-id="'+el.id+'">'+def.render(el.props, ctx)+'</div>';
+          var sc = (el.scale != null ? el.scale : 1);
+          return '<div class="canvas-el" data-id="'+el.id+'" style="transform:scale('+sc+');transform-origin:top center;">'+def.render(el.props, ctx)+'</div>';
         }).join('');
         bindPreviewEvents(zone);
       } else {
@@ -1353,21 +1373,31 @@
           var def = getDef(el.type);
           if (!def) return '';
           var linkLabel = getLinkLabel(el);
-          return '<div class="canvas-el '+(el.id===selectedId?'selected':'')+'" data-id="'+el.id+'" onclick="selectEl(\''+el.id+'\',event)">'+
+          var sc = (el.scale != null ? el.scale : 1);
+          return '<div class="canvas-el '+(el.id===selectedId?'selected':'')+'" data-id="'+el.id+'" onclick="selectEl(\''+el.id+'\',event)" style="transform:scale('+sc+');transform-origin:top center;">'+
             '<div class="el-actions">'+
-              '<button onclick="moveEl(\''+el.id+'\',-1,event)">↑</button>'+
-              '<button onclick="moveEl(\''+el.id+'\',1,event)">↓</button>'+
-              '<button class="btn-del" onclick="removeEl(\''+el.id+'\',event)">×</button>'+
+              '<button type="button" onclick="moveEl(\''+el.id+'\',-1,event)">↑</button>'+
+              '<button type="button" onclick="moveEl(\''+el.id+'\',1,event)">↓</button>'+
+              '<button type="button" class="btn-del" onclick="removeEl(\''+el.id+'\',event)">×</button>'+
             '</div>'+
             (linkLabel ? '<span class="link-badge">→ '+esc(linkLabel)+'</span>' : '')+
+            '<span class="resize-handle tl" data-resize="'+el.id+'"></span>'+
+            '<span class="resize-handle tr" data-resize="'+el.id+'"></span>'+
+            '<span class="resize-handle bl" data-resize="'+el.id+'"></span>'+
+            '<span class="resize-handle br" data-resize="'+el.id+'"></span>'+
+            '<span class="scale-tag">'+Math.round(sc*100)+'%</span>'+
             def.render(el.props, ctx)+'</div>';
         }).join('');
+        bindResizeHandles();
       }
     }
 
     function getLinkLabel(el) {
       var p = el.props;
       var ids = [p.linkPageId, p.menu1Page, p.menu2Page, p.cartPage, p.page1, p.page2, p.page3, p.page4, p.backPage, p.morePage];
+      if (p.items && p.items.length) {
+        for (var ii=0;ii<p.items.length;ii++) if (p.items[ii].page) ids.push(p.items[ii].page);
+      }
       var proj = getProject();
       if (!proj) return '';
       for (var i=0;i<ids.length;i++) {
@@ -1446,6 +1476,73 @@
       }
     }
 
+
+    var resizingId = null;
+    var resizeStartY = 0;
+    var resizeStartScale = 1;
+
+    function bindResizeHandles() {
+      var handles = document.querySelectorAll('.resize-handle');
+      for (var i=0;i<handles.length;i++) {
+        handles[i].addEventListener('pointerdown', onResizeStart);
+      }
+    }
+    function onResizeStart(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var id = e.currentTarget.getAttribute('data-resize');
+      if (!id) return;
+      resizingId = id;
+      resizeStartY = e.clientY;
+      var els = getElements();
+      resizeStartScale = 1;
+      for (var i=0;i<els.length;i++) {
+        if (els[i].id === id) {
+          resizeStartScale = els[i].scale != null ? els[i].scale : 1;
+          break;
+        }
+      }
+      selectedId = id;
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch(err) {}
+      document.addEventListener('pointermove', onResizeMove);
+      document.addEventListener('pointerup', onResizeEnd);
+      document.addEventListener('pointercancel', onResizeEnd);
+    }
+    function onResizeMove(e) {
+      if (!resizingId) return;
+      var dy = e.clientY - resizeStartY;
+      // 向下拖放大，向上拖缩小
+      var next = resizeStartScale + dy / 120;
+      if (next < 0.4) next = 0.4;
+      if (next > 2.5) next = 2.5;
+      next = Math.round(next * 20) / 20;
+      setElementScale(resizingId, next);
+    }
+    function onResizeEnd() {
+      resizingId = null;
+      document.removeEventListener('pointermove', onResizeMove);
+      document.removeEventListener('pointerup', onResizeEnd);
+      document.removeEventListener('pointercancel', onResizeEnd);
+      renderProps();
+    }
+    function setElementScale(id, scale) {
+      var els = getElements();
+      for (var i=0;i<els.length;i++) {
+        if (els[i].id === id) {
+          els[i].scale = scale;
+          break;
+        }
+      }
+      // 只更新 DOM 上的 transform，避免整表重绘打断拖拽
+      var node = document.querySelector('.canvas-el[data-id="'+id+'"]');
+      if (node) {
+        node.style.transform = 'scale('+scale+')';
+        var tag = node.querySelector('.scale-tag');
+        if (tag) tag.textContent = Math.round(scale*100)+'%';
+      }
+    }
+
+
     function selectEl(id, e) {
       if (previewMode) return;
       if (e) e.stopPropagation();
@@ -1493,68 +1590,103 @@
     // ========== 属性面板 ==========
     var ICON_PICK_KEYS = ['home','grid','cart','user','search','heart','star','share','msg','loc','bell','bag','gift','camera','filter','check','back','plus'];
 
-    function iconPickerHtml(propKey, current) {
-      var h = '<div class="icon-pick">';
+    function iconPickerHtml(current, itemIndex) {
+      var h = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">';
       for (var i=0;i<ICON_PICK_KEYS.length;i++) {
         var k = ICON_PICK_KEYS[i];
         if (!ICONS[k]) continue;
-        var act = (current === k) ? ' active' : '';
-        h += '<button type="button" class="icon-pick-btn'+act+'" onclick="updateProp(\''+propKey+'\',\''+k+'\')" title="'+k+'">'+iconS(ICONS[k],18)+'</button>';
+        var act = (current === k) ? 'border-color:#3b82f6;background:#1e3a5f;' : '';
+        h += '<button type="button" style="width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:#1e293b;color:#e2e8f0;display:flex;align-items:center;justify-content:center;padding:0;'+act+'" onclick="updateNavItem('+itemIndex+',\'icon\',\''+k+'\')">'+iconS(ICONS[k],18)+'</button>';
       }
-      h += '<button type="button" class="icon-pick-btn'+(current===''||current==null?' active':'')+'" onclick="updateProp(\''+propKey+'\',\'\')" title="无图标">∅</button>';
-      h += '</div>';
-      return h;
+      return h + '</div>';
     }
 
-    function pageSelectHtml(propKey, val) {
+    function pageSelectHtml(val, onchangeCode) {
       var proj = getProject();
-      var h = '<select onchange="updateProp(\''+propKey+'\', this.value)"><option value="">不跳转</option>';
+      var h = '<select onchange="'+onchangeCode+'" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--border);background:#0f172a;color:var(--text);"><option value="">不跳转</option>';
       if (proj && proj.pages) {
         for (var i=0;i<proj.pages.length;i++) {
           var pg = proj.pages[i];
           h += '<option value="'+pg.id+'" '+(val===pg.id?'selected':'')+'>'+esc(pg.name)+'</option>';
         }
       }
-      h += '</select>';
+      return h + '</select>';
+    }
+
+    function ensureItems(el) {
+      if (!el.props.items) {
+        var def = getDef(el.type);
+        el.props.items = def && def.defaults.items ? JSON.parse(JSON.stringify(def.defaults.items)) : [];
+      }
+      return el.props.items;
+    }
+
+    function renderNavItemsEditor(el) {
+      var items = ensureItems(el);
+      var h = '<p style="font-size:12px;color:var(--muted);margin-bottom:10px;">可添加文字或图标，每一项都能设置跳转页面</p>';
+      h += '<div class="nav-add-row">';
+      h += '<button type="button" class="btn-primary" onclick="addNavItem(\'text\')">+ 添加文字</button>';
+      h += '<button type="button" class="btn-secondary" onclick="addNavItem(\'icon\')">+ 添加图标</button>';
+      h += '</div>';
+      for (var i=0;i<items.length;i++) {
+        var it = items[i];
+        h += '<div class="nav-item-row">';
+        h += '<span style="font-size:11px;color:var(--muted);width:100%;">第 '+(i+1)+' 项 · '+(it.kind==='icon'?'图标':'文字')+'</span>';
+        if (it.kind === 'icon') {
+          h += '<div style="width:100%;"><label style="font-size:11px;color:var(--muted);">选择图标</label>'+iconPickerHtml(it.icon||'home', i)+'</div>';
+          h += '<div style="width:100%;"><label style="font-size:11px;color:var(--muted);">下方文字（可选）</label><input type="text" value="'+esc(it.text||'')+'" onchange="updateNavItem('+i+',\'text\',this.value)" placeholder="如：首页"></div>';
+        } else {
+          h += '<div style="width:100%;"><label style="font-size:11px;color:var(--muted);">文字</label><input type="text" value="'+esc(it.text||'')+'" onchange="updateNavItem('+i+',\'text\',this.value)" placeholder="输入文字"></div>';
+        }
+        h += '<div style="width:100%;"><label style="font-size:11px;color:var(--muted);">跳转页面</label>'+pageSelectHtml(it.page||'', "updateNavItem("+i+",'page',this.value)")+'</div>';
+        h += '<button type="button" class="btn-danger" style="padding:4px 10px;font-size:11px;" onclick="removeNavItem('+i+')">删除</button>';
+        h += '</div>';
+      }
       return h;
     }
 
-    function renderNavSlotCard(title, slotKey, fields) {
-      // fields: [{kind:'text'|'icon'|'page'|'color'|'number', key, label}]
-      var active = selectedSlot === slotKey ? ' active-slot' : '';
-      var h = '<div class="slot-card'+active+'" data-slot-key="'+slotKey+'" onclick="selectSlot(\''+slotKey+'\')">';
-      h += '<div class="slot-title"><span>'+esc(title)+'</span>'+(selectedSlot===slotKey?'<span style="color:#f59e0b;font-size:10px;">已选中</span>':'')+'</div>';
+    function addNavItem(kind) {
       var els = getElements();
-      var el = null;
-      for (var i=0;i<els.length;i++) if (els[i].id===selectedId) { el=els[i]; break; }
-      if (!el) return '';
-      var props = el.props;
-      for (var f=0;f<fields.length;f++) {
-        var field = fields[f];
-        var val = props[field.key];
-        h += '<div class="prop-group"><label>'+esc(field.label)+'</label>';
-        if (field.kind === 'text') {
-          h += '<input type="text" value="'+esc(val==null?'':val)+'" onchange="updateProp(\''+field.key+'\', this.value)" onclick="event.stopPropagation()" placeholder="留空则不显示">';
-        } else if (field.kind === 'page') {
-          h += pageSelectHtml(field.key, val);
-        } else if (field.kind === 'icon') {
-          h += iconPickerHtml(field.key, val||'');
-        } else if (field.kind === 'number') {
-          h += '<input type="number" min="0" value="'+(val==null?0:val)+'" onchange="updateProp(\''+field.key+'\', +this.value||0)" onclick="event.stopPropagation()">';
-        } else if (field.kind === 'color') {
-          h += '<div class="color-row"><input type="color" value="'+toHex(val)+'" oninput="updateProp(\''+field.key+'\', this.value)" onclick="event.stopPropagation()"><input type="text" value="'+esc(val)+'" onchange="updateProp(\''+field.key+'\', this.value)" style="flex:1;" onclick="event.stopPropagation()"></div>';
+      for (var i=0;i<els.length;i++) {
+        if (els[i].id === selectedId) {
+          ensureItems(els[i]);
+          if (kind === 'icon') els[i].props.items.push({ kind:'icon', icon:'home', text:'', page:'' });
+          else els[i].props.items.push({ kind:'text', text:'文字', page:'' });
+          break;
         }
-        h += '</div>';
       }
-      h += '</div>';
-      return h;
+      renderCanvas();
+      renderProps();
+    }
+    function updateNavItem(index, field, value) {
+      var els = getElements();
+      for (var i=0;i<els.length;i++) {
+        if (els[i].id === selectedId) {
+          var items = ensureItems(els[i]);
+          if (items[index]) items[index][field] = value;
+          break;
+        }
+      }
+      renderCanvas();
+      if (field === 'icon') renderProps();
+    }
+    function removeNavItem(index) {
+      var els = getElements();
+      for (var i=0;i<els.length;i++) {
+        if (els[i].id === selectedId) {
+          ensureItems(els[i]).splice(index, 1);
+          break;
+        }
+      }
+      renderCanvas();
+      renderProps();
     }
 
     function renderProps() {
       var body = document.getElementById('propsBody');
       if (!body) return;
       if (previewMode) {
-        body.innerHTML = '<div class="props-empty">预览模式中<br>点击组件可跳转页面<br>搜索框可实时筛选商品</div>';
+        body.innerHTML = '<div class="props-empty">预览模式 · 可点击跳转 / 搜索</div>';
         return;
       }
       var els = getElements();
@@ -1562,106 +1694,51 @@
       for (var i=0;i<els.length;i++) if (els[i].id===selectedId) { el=els[i]; break; }
       if (!el) {
         body.innerHTML = '<div class="props-empty">选中画布组件后在此编辑<br>点空白处返回添加组件</div>';
-        if (sheetMode === 'props') showSheetComps();
+        if (typeof sheetMode !== 'undefined' && sheetMode === 'props') showSheetComps();
         return;
       }
       var def = getDef(el.type);
       var props = el.props;
+      var sc = el.scale != null ? el.scale : 1;
       var html = '<div class="props-header-row"><strong>'+esc(def.name)+'</strong><button class="props-back" type="button" onclick="selectedId=null;selectedSlot=null;renderCanvas();renderProps();showSheetComps();">返回组件</button></div>';
 
-      // 导航类：按子项拆分编辑
-      if (el.type === 'nav-bottom') {
-        html += '<div class="prop-group"><label>整体背景色</label><div class="color-row"><input type="color" value="'+toHex(props.bgColor)+'" oninput="updateProp(\'bgColor\', this.value)"><input type="text" value="'+esc(props.bgColor)+'" onchange="updateProp(\'bgColor\', this.value)" style="flex:1;"></div></div>';
-        html += '<div class="prop-group"><label>选中色 / 未选中色</label><div class="color-row"><input type="color" value="'+toHex(props.activeColor)+'" oninput="updateProp(\'activeColor\', this.value)" title="选中"><input type="color" value="'+toHex(props.inactiveColor)+'" oninput="updateProp(\'inactiveColor\', this.value)" title="未选中"></div></div>';
-        html += '<div class="prop-group"><label>高度</label><input type="number" min="40" value="'+(props.height||56)+'" onchange="updateProp(\'height\', +this.value||56)"></div>';
-        html += '<p style="font-size:11px;color:var(--muted);margin:8px 0 10px;">点下方卡片或画布中的 Tab，可单独改图标、文字、跳转（类似 PS 选中图层）</p>';
-        for (var n=1;n<=4;n++) {
-          html += renderNavSlotCard('Tab '+n, 'tab'+n, [
-            { kind:'text', key:'tab'+n, label:'文字' },
-            { kind:'icon', key:'icon'+n, label:'图标' },
-            { kind:'page', key:'page'+n, label:'点击跳转页面' }
-          ]);
+      html += '<div class="prop-group"><label>大小（也可拖选中框四角）</label>';
+      html += '<input type="range" min="40" max="250" value="'+Math.round(sc*100)+'" oninput="setElementScale(selectedId, this.value/100);var t=this.nextElementSibling;if(t)t.textContent=this.value+\'%\';" style="width:100%;">';
+      html += '<div style="font-size:12px;color:var(--muted);margin-top:4px;">'+Math.round(sc*100)+'%</div></div>';
+
+      if (el.type === 'nav-top' || el.type === 'nav-bottom' || el.type === 'nav-back') {
+        html += '<div class="prop-group"><label>背景色</label><div class="color-row"><input type="color" value="'+toHex(props.bgColor||'#ffffff')+'" oninput="updateProp(\'bgColor\',this.value)"></div></div>';
+        if (props.textColor != null) {
+          html += '<div class="prop-group"><label>文字色</label><div class="color-row"><input type="color" value="'+toHex(props.textColor)+'" oninput="updateProp(\'textColor\',this.value)"></div></div>';
         }
-        body.innerHTML = html;
-        return;
-      }
-      if (el.type === 'nav-top') {
-        html += '<div class="prop-group"><label>背景色 / 文字色</label><div class="color-row"><input type="color" value="'+toHex(props.bgColor)+'" oninput="updateProp(\'bgColor\', this.value)"><input type="color" value="'+toHex(props.textColor)+'" oninput="updateProp(\'textColor\', this.value)"></div></div>';
-        html += '<div class="prop-group"><label>高度</label><input type="number" min="36" value="'+(props.height||48)+'" onchange="updateProp(\'height\', +this.value||48)"></div>';
-        html += '<p style="font-size:11px;color:var(--muted);margin:8px 0 10px;">点画布中 Logo / 菜单 / 右侧图标可单独选中编辑</p>';
-        html += renderNavSlotCard('Logo 文字', 'logo', [
-          { kind:'text', key:'logoText', label:'文字' },
-          { kind:'page', key:'logoPage', label:'点击跳转' }
-        ]);
-        html += renderNavSlotCard('菜单 1', 'menu1', [
-          { kind:'text', key:'menu1', label:'文字' },
-          { kind:'icon', key:'menu1Icon', label:'图标（可选）' },
-          { kind:'page', key:'menu1Page', label:'点击跳转' }
-        ]);
-        html += renderNavSlotCard('菜单 2', 'menu2', [
-          { kind:'text', key:'menu2', label:'文字' },
-          { kind:'icon', key:'menu2Icon', label:'图标（可选）' },
-          { kind:'page', key:'menu2Page', label:'点击跳转' }
-        ]);
-        html += renderNavSlotCard('右侧图标 1', 'right1', [
-          { kind:'icon', key:'right1Icon', label:'图标' },
-          { kind:'page', key:'right1Page', label:'点击跳转' }
-        ]);
-        html += renderNavSlotCard('右侧图标 2', 'right2', [
-          { kind:'icon', key:'right2Icon', label:'图标' },
-          { kind:'page', key:'right2Page', label:'点击跳转' }
-        ]);
-        body.innerHTML = html;
-        return;
-      }
-      if (el.type === 'nav-back') {
-        html += '<div class="prop-group"><label>背景色 / 文字色</label><div class="color-row"><input type="color" value="'+toHex(props.bgColor)+'" oninput="updateProp(\'bgColor\', this.value)"><input type="color" value="'+toHex(props.textColor)+'" oninput="updateProp(\'textColor\', this.value)"></div></div>';
-        html += '<div class="prop-group"><label>高度</label><input type="number" min="36" value="'+(props.height||44)+'" onchange="updateProp(\'height\', +this.value||44)"></div>';
-        html += renderNavSlotCard('返回按钮', 'back', [
-          { kind:'icon', key:'backIcon', label:'图标' },
-          { kind:'page', key:'backPage', label:'返回跳转页面' }
-        ]);
-        html += renderNavSlotCard('标题', 'title', [
-          { kind:'text', key:'title', label:'标题文字' },
-          { kind:'page', key:'titlePage', label:'点击跳转（可选）' }
-        ]);
+        if (props.activeColor != null) {
+          html += '<div class="prop-group"><label>选中色</label><div class="color-row"><input type="color" value="'+toHex(props.activeColor)+'" oninput="updateProp(\'activeColor\',this.value)"></div></div>';
+        }
+        html += '<div class="prop-group"><label>高度</label><input type="number" min="36" value="'+(props.height||48)+'" onchange="updateProp(\'height\',+this.value||48)"></div>';
+        html += renderNavItemsEditor(el);
         body.innerHTML = html;
         return;
       }
 
-      // 通用属性
       var pageLinkKeys = getPageLinkKeys(el.type);
-      var proj = getProject();
       var keys = Object.keys(props);
       for (var k=0;k<keys.length;k++) {
         var key = keys[k];
+        if (key === 'items') continue;
         var val = props[key];
         var isColor = /color|Color|bgColor|textColor|borderColor|priceColor|btnColor|activeColor|inactiveColor/i.test(key);
         var isPage = pageLinkKeys.indexOf(key) >= 0 || key === 'linkPageId';
         var isSize = /size|height|radius|imgHeight|imgSize|fontSize|padding/i.test(key);
-        var isIcon = /Icon$|^icon/i.test(key) && typeof val === 'string';
         var label = propLabel(key);
-
         if (isPage) {
-          html += '<div class="prop-group"><label>'+label+'</label>'+pageSelectHtml(key, val)+'</div>';
-        } else if (isIcon) {
-          html += '<div class="prop-group"><label>'+label+'</label>'+iconPickerHtml(key, val||'')+'</div>';
+          html += '<div class="prop-group"><label>'+label+'</label>'+pageSelectHtml(val, "updateProp('"+key+"', this.value)")+'</div>';
         } else if (isColor) {
-          html += '<div class="prop-group"><label>'+label+'</label><div class="color-row">'+
-            '<input type="color" value="'+toHex(val)+'" oninput="updateProp(\''+key+'\', this.value)">'+
-            '<input type="text" value="'+esc(val)+'" onchange="updateProp(\''+key+'\', this.value)" style="flex:1;"></div>'+
-            '<div class="color-presets">'+COLOR_PRESETS.map(function(c){
-              return '<div class="color-swatch" style="background:'+c+';'+(c==='#ffffff'?'border:1px solid #ccc;':'')+'" onclick="updateProp(\''+key+'\',\''+c+'\')"></div>';
-            }).join('')+'</div></div>';
+          html += '<div class="prop-group"><label>'+label+'</label><div class="color-row"><input type="color" value="'+toHex(val)+'" oninput="updateProp(\''+key+'\', this.value)"><input type="text" value="'+esc(val)+'" onchange="updateProp(\''+key+'\', this.value)" style="flex:1;"></div></div>';
         } else if (isSize || typeof val === 'number') {
           html += '<div class="prop-group"><label>'+label+'</label><input type="number" min="0" value="'+val+'" onchange="updateProp(\''+key+'\', +this.value||0)"></div>';
-        } else {
-          html += '<div class="prop-group"><label>'+label+'</label><input type="text" value="'+esc(val)+'" onchange="updateProp(\''+key+'\', this.value)" placeholder="留空则不显示"></div>';
+        } else if (typeof val === 'string' || val == null) {
+          html += '<div class="prop-group"><label>'+label+'</label><input type="text" value="'+esc(val==null?'':val)+'" onchange="updateProp(\''+key+'\', this.value)" placeholder="留空则不显示"></div>';
         }
-      }
-      // 通用组件也显示跳转（若有 linkPageId）
-      if (props.hasOwnProperty('linkPageId') && pageLinkKeys.indexOf('linkPageId') < 0) {
-        html += '<div class="prop-group"><label>点击跳转页面</label>'+pageSelectHtml('linkPageId', props.linkPageId)+'</div>';
       }
       body.innerHTML = html;
     }
@@ -1753,7 +1830,9 @@
       var pagesData = proj.pages.map(function(pg) {
         var body = (pg.elements||[]).map(function(el) {
           var def = getDef(el.type);
-          return def ? def.render(el.props, { preview: true }) : '';
+          var sc = (el.scale != null ? el.scale : 1);
+          var inner = def ? def.render(el.props, { preview: true }) : '';
+          return sc !== 1 ? '<div style="transform:scale('+sc+');transform-origin:top center;">'+inner+'</div>' : inner;
         }).join('\n');
         return { id: pg.id, name: pg.name, html: body };
       });
